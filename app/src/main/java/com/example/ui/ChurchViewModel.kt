@@ -71,8 +71,33 @@ data class ChurchUiState(
 class ChurchViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = ChurchRepository.getInstance(application)
+    private val prefs = application.getSharedPreferences("church_app_preferences", Context.MODE_PRIVATE)
 
-    private val _uiState = MutableStateFlow(ChurchUiState())
+    private val _uiState = MutableStateFlow(
+        ChurchUiState(
+            isOnboardingCompleted = prefs.getBoolean("key_onboarding_completed", false),
+            themeMode = try {
+                ThemeMode.valueOf(prefs.getString("key_theme_mode", ThemeMode.SYSTEM.name) ?: ThemeMode.SYSTEM.name)
+            } catch (e: Exception) {
+                ThemeMode.SYSTEM
+            },
+            accentTheme = try {
+                AccentTheme.valueOf(prefs.getString("key_accent_theme", AccentTheme.GOLD_NAVY.name) ?: AccentTheme.GOLD_NAVY.name)
+            } catch (e: Exception) {
+                AccentTheme.GOLD_NAVY
+            },
+            fontPreset = try {
+                FontPreset.valueOf(prefs.getString("key_font_preset", FontPreset.APPLE_BALANCED.name) ?: FontPreset.APPLE_BALANCED.name)
+            } catch (e: Exception) {
+                FontPreset.APPLE_BALANCED
+            },
+            readerFontSizeSp = prefs.getFloat("key_reader_font_size", 17f),
+            selectedTranslation = prefs.getString("key_bible_translation", "NIV") ?: "NIV",
+            dailyVerseNotificationEnabled = prefs.getBoolean("key_daily_verse_notif", true),
+            dailyVerseTime = prefs.getString("key_daily_verse_time", "07:00 AM") ?: "07:00 AM",
+            meetingReminderEnabled = prefs.getBoolean("key_meeting_reminder_notif", true)
+        )
+    )
     val uiState: StateFlow<ChurchUiState> = _uiState.asStateFlow()
 
     // Data streams from repository
@@ -115,10 +140,12 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun completeOnboarding() {
+        prefs.edit().putBoolean("key_onboarding_completed", true).apply()
         _uiState.update { it.copy(isOnboardingCompleted = true) }
     }
 
     fun resetToOnboarding() {
+        prefs.edit().putBoolean("key_onboarding_completed", false).apply()
         _uiState.update { it.copy(isOnboardingCompleted = false) }
     }
 
@@ -165,11 +192,14 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun setTranslation(translation: String) {
+        prefs.edit().putString("key_bible_translation", translation).apply()
         _uiState.update { it.copy(selectedTranslation = translation) }
     }
 
     fun setReaderFontSize(sizeSp: Float) {
-        _uiState.update { it.copy(readerFontSizeSp = sizeSp.coerceIn(13f, 26f)) }
+        val safeSize = sizeSp.coerceIn(13f, 26f)
+        prefs.edit().putFloat("key_reader_font_size", safeSize).apply()
+        _uiState.update { it.copy(readerFontSizeSp = safeSize) }
     }
 
     fun setScriptureSearchQuery(query: String) {
@@ -420,30 +450,36 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
 
     // Theme & Appearance Customization
     fun setThemeMode(mode: ThemeMode) {
+        prefs.edit().putString("key_theme_mode", mode.name).apply()
         _uiState.update { it.copy(themeMode = mode) }
         showToast("Theme updated to ${mode.title}")
     }
 
     fun setAccentTheme(accent: AccentTheme) {
+        prefs.edit().putString("key_accent_theme", accent.name).apply()
         _uiState.update { it.copy(accentTheme = accent) }
         showToast("Accent palette changed to ${accent.title}")
     }
 
     fun setFontPreset(preset: FontPreset) {
+        prefs.edit().putString("key_font_preset", preset.name).apply()
         _uiState.update { it.copy(fontPreset = preset) }
         showToast("Typography preset updated: ${preset.title}")
     }
 
     // Push Notifications
     fun toggleDailyVerseNotifications(enabled: Boolean) {
+        prefs.edit().putBoolean("key_daily_verse_notif", enabled).apply()
         _uiState.update { it.copy(dailyVerseNotificationEnabled = enabled) }
     }
 
     fun toggleMeetingReminders(enabled: Boolean) {
+        prefs.edit().putBoolean("key_meeting_reminder_notif", enabled).apply()
         _uiState.update { it.copy(meetingReminderEnabled = enabled) }
     }
 
     fun setDailyVerseTime(time: String) {
+        prefs.edit().putString("key_daily_verse_time", time).apply()
         _uiState.update { it.copy(dailyVerseTime = time) }
         showToast("Daily verse scheduled for $time")
     }

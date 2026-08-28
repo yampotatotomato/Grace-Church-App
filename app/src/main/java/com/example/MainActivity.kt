@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -148,7 +150,47 @@ fun ChurchApp(viewModel: ChurchViewModel) {
                     AnimatedContent(
                         targetState = uiState.selectedTab,
                         transitionSpec = {
-                            fadeIn() togetherWith fadeOut()
+                            val initialOrdinal = initialState.ordinal
+                            val targetOrdinal = targetState.ordinal
+                            if (targetOrdinal > initialOrdinal) {
+                                (slideInHorizontally(
+                                    animationSpec = spring(
+                                        stiffness = Spring.StiffnessMediumLow,
+                                        dampingRatio = Spring.DampingRatioLowBouncy
+                                    ),
+                                    initialOffsetX = { fullWidth -> fullWidth / 3 }
+                                ) + fadeIn(animationSpec = tween(280, easing = FastOutSlowInEasing)) + scaleIn(
+                                    initialScale = 0.96f,
+                                    animationSpec = tween(280)
+                                )).togetherWith(
+                                    slideOutHorizontally(
+                                        animationSpec = tween(240, easing = FastOutLinearInEasing),
+                                        targetOffsetX = { fullWidth -> -fullWidth / 3 }
+                                    ) + fadeOut(animationSpec = tween(200)) + scaleOut(
+                                        targetScale = 0.96f,
+                                        animationSpec = tween(200)
+                                    )
+                                )
+                            } else {
+                                (slideInHorizontally(
+                                    animationSpec = spring(
+                                        stiffness = Spring.StiffnessMediumLow,
+                                        dampingRatio = Spring.DampingRatioLowBouncy
+                                    ),
+                                    initialOffsetX = { fullWidth -> -fullWidth / 3 }
+                                ) + fadeIn(animationSpec = tween(280, easing = FastOutSlowInEasing)) + scaleIn(
+                                    initialScale = 0.96f,
+                                    animationSpec = tween(280)
+                                )).togetherWith(
+                                    slideOutHorizontally(
+                                        animationSpec = tween(240, easing = FastOutLinearInEasing),
+                                        targetOffsetX = { fullWidth -> fullWidth / 3 }
+                                    ) + fadeOut(animationSpec = tween(200)) + scaleOut(
+                                        targetScale = 0.96f,
+                                        animationSpec = tween(200)
+                                    )
+                                )
+                            }
                         },
                         label = "tab_transition"
                     ) { targetTab ->
@@ -262,13 +304,32 @@ fun BottomNavItem(
     onClick: () -> Unit,
     testTag: String
 ) {
-    val tint = if (isSelected) RoyalNavy else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+    val activeColor = MaterialTheme.colorScheme.primary
+    val iconScale by animateFloatAsState(
+        targetValue = if (isSelected) 1.15f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
+        label = "nav_icon_scale"
+    )
+    val tint by animateColorAsState(
+        targetValue = if (isSelected) activeColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+        animationSpec = tween(220),
+        label = "nav_tint"
+    )
+    val pillBgColor by animateColorAsState(
+        targetValue = if (isSelected) activeColor.copy(alpha = 0.12f) else Color.Transparent,
+        animationSpec = tween(220),
+        label = "nav_pill_bg"
+    )
 
     Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .background(pillBgColor)
             .clickable(onClick = onClick)
-            .padding(horizontal = 6.dp, vertical = 4.dp)
+            .padding(horizontal = 10.dp, vertical = 6.dp)
             .testTag(testTag),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -277,7 +338,9 @@ fun BottomNavItem(
             imageVector = icon,
             contentDescription = title,
             tint = tint,
-            modifier = Modifier.size(22.dp)
+            modifier = Modifier
+                .size(22.dp)
+                .scale(iconScale)
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
