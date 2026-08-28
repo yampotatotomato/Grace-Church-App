@@ -31,8 +31,29 @@ interface JournalDao {
     @Query("SELECT * FROM journal_entries WHERE devotionId = :devotionId LIMIT 1")
     fun getJournalForDevotion(devotionId: String): Flow<JournalEntryEntity?>
 
+    @Query("SELECT * FROM journal_entries WHERE title LIKE '%' || :query || '%' OR reflectionText LIKE '%' || :query || '%' OR prayerText LIKE '%' || :query || '%' ORDER BY timestamp DESC")
+    fun searchJournals(query: String): Flow<List<JournalEntryEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveJournal(entry: JournalEntryEntity): Long
+
+    @Query("DELETE FROM journal_entries WHERE id = :id")
+    suspend fun deleteJournal(id: Int)
+}
+
+@Dao
+interface FavoriteDevotionDao {
+    @Query("SELECT devotionId FROM favorite_devotions")
+    fun getAllFavoriteIds(): Flow<List<String>>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM favorite_devotions WHERE devotionId = :devotionId)")
+    fun isFavorite(devotionId: String): Flow<Boolean>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addFavorite(favorite: FavoriteDevotionEntity)
+
+    @Query("DELETE FROM favorite_devotions WHERE devotionId = :devotionId")
+    suspend fun removeFavorite(devotionId: String)
 }
 
 @Dao

@@ -9,16 +9,18 @@ import androidx.room.RoomDatabase
     entities = [
         BookmarkEntity::class,
         JournalEntryEntity::class,
+        FavoriteDevotionEntity::class,
         PrayerRequestEntity::class,
         PastorMessageEntity::class,
         JoinedGroupEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun bookmarkDao(): BookmarkDao
     abstract fun journalDao(): JournalDao
+    abstract fun favoriteDevotionDao(): FavoriteDevotionDao
     abstract fun prayerDao(): PrayerDao
     abstract fun pastorMessageDao(): PastorMessageDao
     abstract fun joinedGroupDao(): JoinedGroupDao

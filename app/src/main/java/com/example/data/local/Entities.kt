@@ -18,12 +18,20 @@ data class BookmarkEntity(
 @Entity(tableName = "journal_entries")
 data class JournalEntryEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val devotionId: String,
+    val devotionId: String = "",
     val dateString: String,
     val title: String,
     val reflectionText: String,
-    val prayerText: String,
+    val prayerText: String = "",
+    val category: String = "Reflection", // "Reflection", "Gratitude", "Prayer", "Scripture Study"
+    val mood: String = "Peaceful", // "Peaceful", "Grateful", "Seeking Guidance", "Joyful", "Humbled"
     val timestamp: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "favorite_devotions")
+data class FavoriteDevotionEntity(
+    @PrimaryKey val devotionId: String,
+    val favoritedTimestamp: Long = System.currentTimeMillis()
 )
 
 @Entity(tableName = "prayer_requests")

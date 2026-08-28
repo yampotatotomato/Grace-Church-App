@@ -1,6 +1,5 @@
 package com.example.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,9 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,19 +15,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.R
 import com.example.data.model.PrayerGroup
 import com.example.data.repository.ChurchDataSeed
 import com.example.ui.ChurchTab
 import com.example.ui.ChurchViewModel
+import com.example.ui.components.CupertinoIcons
 import com.example.ui.components.IosGroupedCard
 import com.example.ui.components.IosTopBar
 import com.example.ui.theme.*
@@ -45,27 +39,40 @@ fun HomeScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val joinedGroups by viewModel.joinedGroups.collectAsState()
+    val favoriteDevotionIds by viewModel.favoriteDevotionIds.collectAsState()
+    val journals by viewModel.journals.collectAsState()
     val dailyVerse = remember { ChurchDataSeed.dailyVerse }
     val latestSermon = remember { ChurchDataSeed.sermons.first() }
     val todayDevotion = remember { ChurchDataSeed.devotionals.first() }
     val featuredGroup = remember { ChurchDataSeed.prayerGroups.first() }
+    val isTodayDevotionFav = favoriteDevotionIds.contains(todayDevotion.id)
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Top iOS Bar
+        // Top iOS Bar with Cupertino Icons
         IosTopBar(
             title = "Grace Church",
             subtitle = "Daily Sanctuary",
             actions = {
                 IconButton(
+                    onClick = { onNavigateTab(ChurchTab.JOURNAL) },
+                    modifier = Modifier.testTag("home_journal_button")
+                ) {
+                    Icon(
+                        imageVector = CupertinoIcons.SquareAndPencil,
+                        contentDescription = "Spiritual Journal",
+                        tint = RoyalNavy
+                    )
+                }
+                IconButton(
                     onClick = { viewModel.openNotificationSettings() },
                     modifier = Modifier.testTag("home_notifications_button")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Notifications,
+                        imageVector = CupertinoIcons.Bell,
                         contentDescription = "Notifications & Settings",
                         tint = RoyalNavy
                     )
@@ -114,7 +121,7 @@ fun HomeScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.AutoAwesome,
+                                        imageVector = CupertinoIcons.Sparkles,
                                         contentDescription = null,
                                         tint = ChurchGoldLight,
                                         modifier = Modifier.size(16.dp)
@@ -190,7 +197,7 @@ fun HomeScreen(
                                     modifier = Modifier.size(36.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.BookmarkBorder,
+                                        imageVector = CupertinoIcons.Bookmark,
                                         contentDescription = "Bookmark Verse",
                                         tint = Color.White
                                     )
@@ -203,7 +210,7 @@ fun HomeScreen(
                                     modifier = Modifier.size(36.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.NotificationsActive,
+                                        imageVector = CupertinoIcons.BellFill,
                                         contentDescription = "Send Daily Verse Push Notification",
                                         tint = ChurchGoldLight
                                     )
@@ -214,7 +221,7 @@ fun HomeScreen(
                 }
             }
 
-            // 2. Quick Navigation Grid
+            // 2. Quick Navigation Grid with Cupertino Icons
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -223,18 +230,18 @@ fun HomeScreen(
                     QuickNavButton(
                         title = "Scripture",
                         subtitle = "Holy Bible",
-                        icon = Icons.Default.MenuBook,
+                        icon = CupertinoIcons.Book,
                         accentColor = ScriptureAccent,
                         modifier = Modifier.weight(1f),
                         onClick = { onNavigateTab(ChurchTab.SCRIPTURE) }
                     )
                     QuickNavButton(
-                        title = "Sermons",
-                        subtitle = "Audio & Notes",
-                        icon = Icons.Default.Headphones,
-                        accentColor = PastorAccent,
+                        title = "Devotions",
+                        subtitle = "${favoriteDevotionIds.size} Saved",
+                        icon = CupertinoIcons.Heart,
+                        accentColor = DevotionAccent,
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateTab(ChurchTab.SERMONS) }
+                        onClick = { onNavigateTab(ChurchTab.DEVOTION) }
                     )
                 }
             }
@@ -245,17 +252,17 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     QuickNavButton(
-                        title = "Devotions",
-                        subtitle = "Daily Journal",
-                        icon = Icons.Default.SelfImprovement,
-                        accentColor = DevotionAccent,
+                        title = "Spiritual Journal",
+                        subtitle = "${journals.size} Reflections",
+                        icon = CupertinoIcons.SquareAndPencil,
+                        accentColor = RoyalNavy,
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateTab(ChurchTab.DEVOTION) }
+                        onClick = { onNavigateTab(ChurchTab.JOURNAL) }
                     )
                     QuickNavButton(
                         title = "Prayer Groups",
                         subtitle = "Find Fellowship",
-                        icon = Icons.Default.Groups,
+                        icon = CupertinoIcons.Person2,
                         accentColor = PrayerAccent,
                         modifier = Modifier.weight(1f),
                         onClick = { onNavigateTab(ChurchTab.COMMUNITY) }
@@ -291,7 +298,7 @@ fun HomeScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Favorite,
+                                    imageVector = CupertinoIcons.HeartFill,
                                     contentDescription = null,
                                     tint = DevotionAccent,
                                     modifier = Modifier.size(24.dp)
@@ -319,12 +326,17 @@ fun HomeScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.outline,
-                                modifier = Modifier.size(18.dp)
-                            )
+                            IconButton(
+                                onClick = { viewModel.toggleFavoriteDevotion(todayDevotion.id) },
+                                modifier = Modifier.size(32.dp).testTag("home_fav_devotion_button")
+                            ) {
+                                Icon(
+                                    imageVector = if (isTodayDevotionFav) CupertinoIcons.HeartFill else CupertinoIcons.Heart,
+                                    contentDescription = "Favorite",
+                                    tint = if (isTodayDevotionFav) ChurchGold else MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -359,9 +371,9 @@ fun HomeScreen(
                             ) {
                                 Icon(
                                     imageVector = if (uiState.isAudioPlaying && uiState.activeSermon?.id == latestSermon.id) {
-                                        Icons.Default.Pause
+                                        CupertinoIcons.PauseFill
                                     } else {
-                                        Icons.Default.PlayArrow
+                                        CupertinoIcons.PlayFill
                                     },
                                     contentDescription = "Play Sermon",
                                     tint = PastorAccent,
@@ -453,7 +465,7 @@ fun HomeScreen(
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    imageVector = Icons.Default.AccessTime,
+                                    imageVector = CupertinoIcons.Calendar,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(16.dp)
@@ -470,7 +482,7 @@ fun HomeScreen(
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    imageVector = Icons.Default.Place,
+                                    imageVector = CupertinoIcons.Location,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(16.dp)
@@ -497,7 +509,7 @@ fun HomeScreen(
                                     contentPadding = PaddingValues(0.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Alarm,
+                                        imageVector = CupertinoIcons.Bell,
                                         contentDescription = null,
                                         tint = IosBlue,
                                         modifier = Modifier.size(16.dp)

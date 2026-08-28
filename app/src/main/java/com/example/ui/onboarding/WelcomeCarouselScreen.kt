@@ -1,28 +1,20 @@
 package com.example.ui.onboarding
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -34,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
+import com.example.ui.components.CupertinoIcons
 import com.example.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -56,35 +49,35 @@ fun WelcomeCarouselScreen(
     val steps = remember {
         listOf(
             OnboardingStep(
-                title = "Welcome to Grace Church",
-                subtitle = "FAITH • COMMUNITY • SCRIPTURE",
-                description = "Your spiritual sanctuary in the palm of your hand. Experience worship, growth, and fellowship wherever you are.",
+                title = "Welcome to Grace Sanctuary",
+                subtitle = "FAITH • FELLOWSHIP • SCRIPTURE",
+                description = "Your spiritual home and sanctuary in the palm of your hand. Experience Christ-centered worship, growth, and community wherever you go.",
                 imageRes = R.drawable.img_onboarding_welcome,
-                icon = Icons.Default.Church,
+                icon = CupertinoIcons.HouseFill,
                 accentColor = ChurchGold
             ),
             OnboardingStep(
                 title = "Daily Scripture & Devotions",
                 subtitle = "GROW IN THE WORD",
-                description = "Dive into Holy Scripture with custom reader modes, audio sermon reflections, and guided daily devotionals with personal journaling.",
+                description = "Dive into Holy Scripture with custom reader modes, audio sermon reflections, and favorited daily devotionals.",
                 imageRes = R.drawable.img_onboarding_scripture,
-                icon = Icons.Default.MenuBook,
+                icon = CupertinoIcons.Book,
                 accentColor = ScriptureAccent
             ),
             OnboardingStep(
-                title = "Pastoral Guidance & Teachings",
-                subtitle = "WISDOM & PASTORAL CARE",
-                description = "Listen to weekly sermons, download study notes, and easily reach out directly to our pastoral team for counseling or prayer.",
+                title = "Spiritual Journaling",
+                subtitle = "SANCTUARY REFLECTIONS",
+                description = "Keep a personal, private journal of your spiritual journey, answered prayers, devotion reflections, and heartfelt gratitude.",
                 imageRes = R.drawable.img_onboarding_welcome,
-                icon = Icons.Default.PersonSearch,
-                accentColor = PastorAccent
+                icon = CupertinoIcons.SquareAndPencil,
+                accentColor = RoyalNavy
             ),
             OnboardingStep(
-                title = "Local Prayer Groups & Wall",
+                title = "Local Prayer Groups & Fellowship",
                 subtitle = "UNITED IN PRAYER",
-                description = "Find prayer fellowships in your neighborhood, RSVP for weekly meetings, and share prayer requests on the community wall.",
+                description = "Find prayer fellowships in your area, RSVP for weekly meetings, contact pastoral counselors, and share prayer requests.",
                 imageRes = R.drawable.img_onboarding_community,
-                icon = Icons.Default.Groups,
+                icon = CupertinoIcons.Person2Fill,
                 accentColor = PrayerAccent
             )
         )
@@ -107,7 +100,6 @@ fun WelcomeCarouselScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScrollEnabled()
                     .padding(bottom = 120.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -115,7 +107,7 @@ fun WelcomeCarouselScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(340.dp)
+                        .height(350.dp)
                         .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
                 ) {
                     Image(
@@ -132,7 +124,7 @@ fun WelcomeCarouselScreen(
                                 Brush.verticalGradient(
                                     colors = listOf(
                                         Color.Black.copy(alpha = 0.25f),
-                                        Color.Black.copy(alpha = 0.65f)
+                                        Color.Black.copy(alpha = 0.7f)
                                     )
                                 )
                             )
@@ -145,7 +137,7 @@ fun WelcomeCarouselScreen(
                             .padding(24.dp)
                             .size(56.dp)
                             .clip(CircleShape)
-                            .background(RoyalNavy.copy(alpha = 0.9f))
+                            .background(RoyalNavy.copy(alpha = 0.92f))
                             .border(1.5.dp, step.accentColor, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
@@ -220,15 +212,15 @@ fun WelcomeCarouselScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Church,
+                        imageVector = CupertinoIcons.Sparkles,
                         contentDescription = null,
-                        tint = ChurchGoldLight,
-                        modifier = Modifier.size(18.dp)
+                        tint = ChurchGold,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "GRACE CHURCH",
+                    text = "GRACE SANCTUARY",
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -316,7 +308,7 @@ fun WelcomeCarouselScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        imageVector = CupertinoIcons.ArrowRight,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
@@ -325,6 +317,3 @@ fun WelcomeCarouselScreen(
         }
     }
 }
-
-// Simple modifier extension for layout ergonomics
-fun Modifier.verticalScrollEnabled(): Modifier = this

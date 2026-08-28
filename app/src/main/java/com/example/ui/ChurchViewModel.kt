@@ -17,9 +17,10 @@ import kotlinx.coroutines.launch
 enum class ChurchTab(val title: String, val testTag: String) {
     HOME("Today", "tab_home"),
     SCRIPTURE("Scripture", "tab_scripture"),
-    SERMONS("Sermons", "tab_sermons"),
     DEVOTION("Devotion", "tab_devotion"),
-    COMMUNITY("Prayer & Groups", "tab_community")
+    JOURNAL("Journal", "tab_journal"),
+    COMMUNITY("Community", "tab_community"),
+    SERMONS("Sermons", "tab_sermons")
 }
 
 data class ChurchUiState(
@@ -40,6 +41,13 @@ data class ChurchUiState(
     val selectedDevotional: Devotional = ChurchDataSeed.devotionals.first(),
     val currentDevotionJournal: JournalEntryEntity? = null,
     val devotionStreakDays: Int = 7,
+    val favoriteDevotionIds: List<String> = emptyList(),
+    val devotionsFilterFavoritesOnly: Boolean = false,
+    // Journaling State
+    val journalSearchQuery: String = "",
+    val selectedJournalCategory: String = "All",
+    val isShowingNewJournalModal: Boolean = false,
+    val editingJournalEntry: JournalEntryEntity? = null,
     // Community / Prayer State
     val selectedAreaFilter: String = "All Areas",
     val isShowingPrayerModal: Boolean = false,
@@ -76,11 +84,19 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
     val pastorMessages: StateFlow<List<PastorMessageEntity>> = repository.allPastorMessages
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val favoriteDevotionIds: StateFlow<List<String>> = repository.favoriteDevotionIds
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     private var audioPlaybackJob: Job? = null
 
     init {
         NotificationHelper.createNotificationChannels(application)
         observeDevotionJournal(_uiState.value.selectedDevotional.id)
+        viewModelScope.launch {
+            repository.favoriteDevotionIds.collect { favs ->
+                _uiState.update { it.copy(favoriteDevotionIds = favs) }
+            }
+        }
     }
 
     private fun observeDevotionJournal(devotionId: String) {
@@ -204,6 +220,24 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
         observeDevotionJournal(devotional.id)
     }
 
+    fun toggleFavoriteDevotion(devotionId: String) {
+        viewModelScope.launch {
+            val wasFav = _uiState.value.favoriteDevotionIds.contains(devotionId)
+            repository.toggleFavoriteDevotion(devotionId)
+            val dev = ChurchDataSeed.devotionals.find { it.id == devotionId }
+            val title = dev?.title ?: "Devotion"
+            if (wasFav) {
+                showToast("Removed \"$title\" from Favorites")
+            } else {
+                showToast("Saved \"$title\" to Favorites")
+            }
+        }
+    }
+
+    fun setDevotionsFilterFavoritesOnly(favoritesOnly: Boolean) {
+        _uiState.update { it.copy(devotionsFilterFavoritesOnly = favoritesOnly) }
+    }
+
     fun saveJournalEntry(devotionId: String, reflection: String, prayer: String) {
         viewModelScope.launch {
             val dev = ChurchDataSeed.devotionals.find { it.id == devotionId } ?: _uiState.value.selectedDevotional
@@ -212,9 +246,75 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
                 dateString = dev.date,
                 title = dev.title,
                 reflectionText = reflection,
-                prayerText = prayer
+                prayerText = prayer,
+                category = "Devotion Reflection",
+                mood = "Peaceful"
             )
             showToast("Reflection & Prayer saved to Journal")
+        }
+    }
+
+    // Journal Section & Notes
+    fun setJournalSearchQuery(query: String) {
+        _uiState.update { it.copy(journalSearchQuery = query) }
+    }
+
+    fun setSelectedJournalCategory(category: String) {
+        _uiState.update { it.copy(selectedJournalCategory = category) }
+    }
+
+    fun openNewJournalModal(entry: JournalEntryEntity? = null, initialDevotionId: String = "") {
+        _uiState.update {
+            it.copy(
+                isShowingNewJournalModal = true,
+                editingJournalEntry = entry
+            )
+        }
+    }
+
+    fun closeNewJournalModal() {
+        _uiState.update {
+            it.copy(
+                isShowingNewJournalModal = false,
+                editingJournalEntry = null
+            )
+        }
+    }
+
+    fun saveCustomJournal(
+        title: String,
+        reflectionText: String,
+        prayerText: String,
+        category: String,
+        mood: String,
+        id: Int = 0,
+        devotionId: String = ""
+    ) {
+        viewModelScope.launch {
+            val dateStr = if (id > 0) {
+                _uiState.value.editingJournalEntry?.dateString ?: "Today, ${java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault()).format(java.util.Date())}"
+            } else {
+                "Today, ${java.text.SimpleDateFormat("h:mm a", java.util.Locale.getDefault()).format(java.util.Date())}"
+            }
+            repository.saveJournal(
+                devotionId = devotionId,
+                dateString = dateStr,
+                title = title.ifBlank { "Spiritual Reflection" },
+                reflectionText = reflectionText,
+                prayerText = prayerText,
+                category = category,
+                mood = mood,
+                id = id
+            )
+            _uiState.update { it.copy(isShowingNewJournalModal = false, editingJournalEntry = null) }
+            showToast(if (id > 0) "Journal entry updated" else "Journal entry saved to Sanctuary notes")
+        }
+    }
+
+    fun deleteJournalEntry(id: Int) {
+        viewModelScope.launch {
+            repository.deleteJournal(id)
+            showToast("Journal entry removed")
         }
     }
 

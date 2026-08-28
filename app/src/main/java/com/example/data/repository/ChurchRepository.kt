@@ -15,18 +15,33 @@ class ChurchRepository(
 ) {
     val bookmarkDao = database.bookmarkDao()
     val journalDao = database.journalDao()
+    val favoriteDevotionDao = database.favoriteDevotionDao()
     val prayerDao = database.prayerDao()
     val pastorMessageDao = database.pastorMessageDao()
     val joinedGroupDao = database.joinedGroupDao()
 
     init {
-        // Seed initial prayer requests if database is empty
+        // Seed initial prayer requests & a sample journal reflection if database is empty
         scope.launch {
             val existing = prayerDao.getAllPrayerRequests().firstOrNull()
             if (existing.isNullOrEmpty()) {
                 ChurchDataSeed.initialPrayerRequests.forEach {
                     prayerDao.insertPrayerRequest(it)
                 }
+            }
+            val existingJournals = journalDao.getAllJournals().firstOrNull()
+            if (existingJournals.isNullOrEmpty()) {
+                journalDao.saveJournal(
+                    JournalEntryEntity(
+                        devotionId = "dev-1",
+                        dateString = "Today, 7:30 AM",
+                        title = "Finding Stillness in Grace",
+                        reflectionText = "Lord, grant me the serenity to lay down my anxious burdens at Your altar today. Your grace is sufficient for me in every trial and joy.",
+                        prayerText = "Father, renew my spirit today and guide my family in peace.",
+                        category = "Devotion Reflection",
+                        mood = "Peaceful"
+                    )
+                )
             }
         }
     }
@@ -78,16 +93,52 @@ class ChurchRepository(
         return journalDao.getJournalForDevotion(devotionId)
     }
 
-    suspend fun saveJournal(devotionId: String, dateString: String, title: String, reflectionText: String, prayerText: String) {
+    fun searchJournals(query: String): Flow<List<JournalEntryEntity>> {
+        return if (query.isBlank()) journalDao.getAllJournals() else journalDao.searchJournals(query)
+    }
+
+    suspend fun saveJournal(
+        devotionId: String = "",
+        dateString: String,
+        title: String,
+        reflectionText: String,
+        prayerText: String = "",
+        category: String = "Reflection",
+        mood: String = "Peaceful",
+        id: Int = 0
+    ) {
         journalDao.saveJournal(
             JournalEntryEntity(
+                id = id,
                 devotionId = devotionId,
                 dateString = dateString,
                 title = title,
                 reflectionText = reflectionText,
-                prayerText = prayerText
+                prayerText = prayerText,
+                category = category,
+                mood = mood
             )
         )
+    }
+
+    suspend fun deleteJournal(id: Int) {
+        journalDao.deleteJournal(id)
+    }
+
+    // Favorite Devotions Flow
+    val favoriteDevotionIds: Flow<List<String>> = favoriteDevotionDao.getAllFavoriteIds()
+
+    fun isDevotionFavorite(devotionId: String): Flow<Boolean> {
+        return favoriteDevotionDao.isFavorite(devotionId)
+    }
+
+    suspend fun toggleFavoriteDevotion(devotionId: String) {
+        val isFav = favoriteDevotionDao.isFavorite(devotionId).firstOrNull() ?: false
+        if (isFav) {
+            favoriteDevotionDao.removeFavorite(devotionId)
+        } else {
+            favoriteDevotionDao.addFavorite(FavoriteDevotionEntity(devotionId = devotionId))
+        }
     }
 
     // Prayer Requests Flow

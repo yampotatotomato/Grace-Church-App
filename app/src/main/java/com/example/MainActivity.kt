@@ -12,13 +12,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.ui.ChurchTab
 import com.example.ui.ChurchViewModel
+import com.example.ui.components.CupertinoIcons
 import com.example.ui.components.ToastBanner
 import com.example.ui.onboarding.WelcomeCarouselScreen
 import com.example.ui.screens.*
@@ -63,6 +61,10 @@ class MainActivity : ComponentActivity() {
                 viewModel.completeOnboarding()
                 viewModel.selectTab(ChurchTab.COMMUNITY)
             }
+            "journal" -> {
+                viewModel.completeOnboarding()
+                viewModel.selectTab(ChurchTab.JOURNAL)
+            }
         }
 
         setContent {
@@ -70,7 +72,7 @@ class MainActivity : ComponentActivity() {
                 // Request Notification Permission on Android 13+
                 val permissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
-                ) { isGranted ->
+                ) { _ ->
                     // Notification permission state updated
                 }
 
@@ -153,10 +155,13 @@ fun ChurchApp(viewModel: ChurchViewModel) {
                             ChurchTab.SCRIPTURE -> ScriptureScreen(
                                 viewModel = viewModel
                             )
-                            ChurchTab.SERMONS -> PastorsScreen(
+                            ChurchTab.DEVOTION -> DevotionScreen(
                                 viewModel = viewModel
                             )
-                            ChurchTab.DEVOTION -> DevotionScreen(
+                            ChurchTab.JOURNAL -> JournalScreen(
+                                viewModel = viewModel
+                            )
+                            ChurchTab.SERMONS -> PastorsScreen(
                                 viewModel = viewModel
                             )
                             ChurchTab.COMMUNITY -> PrayerGroupsScreen(
@@ -186,7 +191,7 @@ fun IosBottomNavigationBar(
         modifier = modifier
             .fillMaxWidth()
             .shadow(12.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
         tonalElevation = 6.dp
     ) {
         Row(
@@ -194,41 +199,48 @@ fun IosBottomNavigationBar(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .height(64.dp)
-                .padding(horizontal = 8.dp),
+                .padding(horizontal = 4.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
             BottomNavItem(
                 title = "Today",
-                icon = Icons.Default.Church,
+                icon = if (selectedTab == ChurchTab.HOME) CupertinoIcons.HouseFill else CupertinoIcons.House,
                 isSelected = selectedTab == ChurchTab.HOME,
                 onClick = { onTabSelected(ChurchTab.HOME) },
                 testTag = "tab_home"
             )
             BottomNavItem(
                 title = "Scripture",
-                icon = Icons.Default.MenuBook,
+                icon = CupertinoIcons.Book,
                 isSelected = selectedTab == ChurchTab.SCRIPTURE,
                 onClick = { onTabSelected(ChurchTab.SCRIPTURE) },
                 testTag = "tab_scripture"
             )
             BottomNavItem(
-                title = "Sermons",
-                icon = Icons.Default.Headphones,
-                isSelected = selectedTab == ChurchTab.SERMONS,
-                onClick = { onTabSelected(ChurchTab.SERMONS) },
-                testTag = "tab_sermons"
-            )
-            BottomNavItem(
                 title = "Devotion",
-                icon = Icons.Default.Favorite,
+                icon = if (selectedTab == ChurchTab.DEVOTION) CupertinoIcons.HeartFill else CupertinoIcons.Heart,
                 isSelected = selectedTab == ChurchTab.DEVOTION,
                 onClick = { onTabSelected(ChurchTab.DEVOTION) },
                 testTag = "tab_devotion"
             )
             BottomNavItem(
+                title = "Journal",
+                icon = CupertinoIcons.SquareAndPencil,
+                isSelected = selectedTab == ChurchTab.JOURNAL,
+                onClick = { onTabSelected(ChurchTab.JOURNAL) },
+                testTag = "tab_journal"
+            )
+            BottomNavItem(
+                title = "Sermons",
+                icon = CupertinoIcons.Headphones,
+                isSelected = selectedTab == ChurchTab.SERMONS,
+                onClick = { onTabSelected(ChurchTab.SERMONS) },
+                testTag = "tab_sermons"
+            )
+            BottomNavItem(
                 title = "Prayer",
-                icon = Icons.Default.Groups,
+                icon = if (selectedTab == ChurchTab.COMMUNITY) CupertinoIcons.Person2Fill else CupertinoIcons.Person2,
                 isSelected = selectedTab == ChurchTab.COMMUNITY,
                 onClick = { onTabSelected(ChurchTab.COMMUNITY) },
                 testTag = "tab_community"
@@ -245,13 +257,13 @@ fun BottomNavItem(
     onClick: () -> Unit,
     testTag: String
 ) {
-    val tint = if (isSelected) RoyalNavy else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    val tint = if (isSelected) RoyalNavy else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
 
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .padding(horizontal = 6.dp, vertical = 4.dp)
             .testTag(testTag),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -260,15 +272,16 @@ fun BottomNavItem(
             imageVector = icon,
             contentDescription = title,
             tint = tint,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(22.dp)
         )
-        Spacer(modifier = Modifier.height(3.dp))
+        Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             color = tint,
-            fontSize = 11.sp
+            fontSize = 10.sp,
+            maxLines = 1
         )
     }
 }
@@ -310,10 +323,10 @@ fun MiniAudioPlayerBar(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.GraphicEq,
+                        imageVector = CupertinoIcons.Sparkles,
                         contentDescription = null,
                         tint = RoyalNavy,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
@@ -340,7 +353,7 @@ fun MiniAudioPlayerBar(
                 modifier = Modifier.size(36.dp)
             ) {
                 Icon(
-                    imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    imageVector = if (isPlaying) CupertinoIcons.PauseFill else CupertinoIcons.PlayFill,
                     contentDescription = if (isPlaying) "Pause" else "Play",
                     tint = Color.White
                 )
