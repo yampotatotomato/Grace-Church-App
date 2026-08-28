@@ -1,0 +1,6 @@
+{
+  "name": "Grace Church",
+  "description": "Church app featuring scripture reading, pastoral sermons and reflections, daily devotionals, pastor directory with direct messaging, local prayer groups finder, and push notification reminders.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

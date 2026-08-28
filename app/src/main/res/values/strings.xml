@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Grace Church</string>
+    <string name="welcome_title">Welcome to Grace Church</string>
+    <string name="scripture_title">Holy Scripture</string>
+    <string name="sermons_title">Pastoral Teachings</string>
+    <string name="devotions_title">Daily Devotions</string>
+    <string name="pastors_title">Our Pastors</string>
+    <string name="prayer_groups_title">Prayer Groups</string>
+    <string name="notifications_title">Daily Reminders</string>
+</resources>
