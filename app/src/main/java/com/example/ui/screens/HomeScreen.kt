@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -64,7 +66,17 @@ fun HomeScreen(
                     Icon(
                         imageVector = CupertinoIcons.SquareAndPencil,
                         contentDescription = "Spiritual Journal",
-                        tint = RoyalNavy
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                IconButton(
+                    onClick = { viewModel.openNotificationSettings() },
+                    modifier = Modifier.testTag("home_settings_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Palette,
+                        contentDescription = "Theme & Customization",
+                        tint = uiState.accentTheme.accentColor
                     )
                 }
                 IconButton(
@@ -74,7 +86,7 @@ fun HomeScreen(
                     Icon(
                         imageVector = CupertinoIcons.Bell,
                         contentDescription = "Notifications & Settings",
-                        tint = RoyalNavy
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -94,7 +106,7 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
                         .testTag("home_verse_of_day_card"),
-                    colors = CardDefaults.cardColors(containerColor = RoyalNavy),
+                    colors = CardDefaults.cardColors(containerColor = uiState.accentTheme.primaryColor),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(
@@ -102,7 +114,10 @@ fun HomeScreen(
                             .fillMaxWidth()
                             .background(
                                 Brush.verticalGradient(
-                                    colors = listOf(RoyalNavy, DeepIndigo)
+                                    colors = listOf(
+                                        uiState.accentTheme.primaryColor,
+                                        uiState.accentTheme.accentColor.copy(alpha = 0.6f)
+                                    )
                                 )
                             )
                             .padding(22.dp)
@@ -117,40 +132,39 @@ fun HomeScreen(
                                     modifier = Modifier
                                         .size(28.dp)
                                         .clip(CircleShape)
-                                        .background(ChurchGold.copy(alpha = 0.2f)),
+                                        .background(Color.White.copy(alpha = 0.2f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = CupertinoIcons.Sparkles,
                                         contentDescription = null,
-                                        tint = ChurchGoldLight,
+                                        tint = Color.White,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = "VERSE OF THE DAY",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = ChurchGoldLight,
-                                    fontWeight = FontWeight.Bold,
+                                    style = AppleTypographyStyles.referenceTag,
+                                    color = Color.White,
                                     letterSpacing = 1.sp
                                 )
                             }
 
                             Text(
                                 text = dailyVerse.date,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color.White.copy(alpha = 0.7f)
+                                style = AppleTypographyStyles.audioTimer,
+                                color = Color.White.copy(alpha = 0.85f),
+                                fontSize = 11.sp
                             )
                         }
 
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
-                            text = "\"${dailyVerse.text}\"",
-                            style = MaterialTheme.typography.titleMedium,
+                            text = "“${dailyVerse.text}”",
+                            style = AppleTypographyStyles.scriptureText(18f),
                             color = Color.White,
-                            lineHeight = 26.sp,
                             fontWeight = FontWeight.Medium
                         )
 
@@ -158,9 +172,9 @@ fun HomeScreen(
 
                         Text(
                             text = "— ${dailyVerse.reference}",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = ChurchGoldLight,
-                            fontWeight = FontWeight.Bold
+                            style = AppleTypographyStyles.referenceTag,
+                            color = Color.White.copy(alpha = 0.9f),
+                            fontSize = 13.sp
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))

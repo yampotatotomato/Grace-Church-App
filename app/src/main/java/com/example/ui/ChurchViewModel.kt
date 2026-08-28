@@ -9,6 +9,9 @@ import com.example.data.model.*
 import com.example.data.repository.ChurchDataSeed
 import com.example.data.repository.ChurchRepository
 import com.example.notifications.NotificationHelper
+import com.example.ui.theme.AccentTheme
+import com.example.ui.theme.FontPreset
+import com.example.ui.theme.ThemeMode
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -54,7 +57,10 @@ data class ChurchUiState(
     val isShowingPrayerModal: Boolean = false,
     val isShowingPastorContactModal: Boolean = false,
     val selectedPastorForContact: Pastor? = null,
-    // Settings & Notifications
+    // Settings, Themes & Notifications
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val accentTheme: AccentTheme = AccentTheme.GOLD_NAVY,
+    val fontPreset: FontPreset = FontPreset.APPLE_BALANCED,
     val dailyVerseNotificationEnabled: Boolean = true,
     val dailyVerseTime: String = "07:00 AM",
     val meetingReminderEnabled: Boolean = true,
@@ -410,6 +416,22 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
             NotificationHelper.sendPastorResponseNotification(context, pastor.name, content.take(60))
             showToast("Message sent directly to ${pastor.name}")
         }
+    }
+
+    // Theme & Appearance Customization
+    fun setThemeMode(mode: ThemeMode) {
+        _uiState.update { it.copy(themeMode = mode) }
+        showToast("Theme updated to ${mode.title}")
+    }
+
+    fun setAccentTheme(accent: AccentTheme) {
+        _uiState.update { it.copy(accentTheme = accent) }
+        showToast("Accent palette changed to ${accent.title}")
+    }
+
+    fun setFontPreset(preset: FontPreset) {
+        _uiState.update { it.copy(fontPreset = preset) }
+        showToast("Typography preset updated: ${preset.title}")
     }
 
     // Push Notifications

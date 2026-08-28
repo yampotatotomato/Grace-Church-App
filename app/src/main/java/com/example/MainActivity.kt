@@ -68,7 +68,12 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            MyApplicationTheme {
+            val uiState by viewModel.uiState.collectAsState()
+
+            MyApplicationTheme(
+                themeMode = uiState.themeMode,
+                accentTheme = uiState.accentTheme
+            ) {
                 // Request Notification Permission on Android 13+
                 val permissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
