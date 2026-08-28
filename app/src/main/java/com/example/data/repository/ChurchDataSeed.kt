@@ -258,196 +258,353 @@ object ChurchDataSeed {
         )
     )
 
-    val bibleBooks = listOf(
-        BibleBook(
-            id = "matthew",
-            name = "Matthew",
-            testament = "New Testament",
-            category = "Gospels",
-            chapterCount = 28,
-            chapters = listOf(
-                BibleChapter(
-                    bookName = "Matthew",
-                    chapterNumber = 5,
-                    verses = listOf(
-                        BibleVerse("Matthew", 5, 1, "Now when Jesus saw the crowds, he went up on a mountainside and sat down. His disciples came to him,"),
-                        BibleVerse("Matthew", 5, 2, "and he began to teach them."),
-                        BibleVerse("Matthew", 5, 3, "Blessed are the poor in spirit, for theirs is the kingdom of heaven."),
-                        BibleVerse("Matthew", 5, 4, "Blessed are those who mourn, for they will be comforted."),
-                        BibleVerse("Matthew", 5, 5, "Blessed are the meek, for they will inherit the earth."),
-                        BibleVerse("Matthew", 5, 6, "Blessed are those who hunger and thirst for righteousness, for they will be filled."),
-                        BibleVerse("Matthew", 5, 7, "Blessed are the merciful, for they will be shown mercy."),
-                        BibleVerse("Matthew", 5, 8, "Blessed are the pure in heart, for they will see God."),
-                        BibleVerse("Matthew", 5, 9, "Blessed are the peacemakers, for they will be called children of God."),
-                        BibleVerse("Matthew", 5, 14, "You are the light of the world. A town built on a hill cannot be hidden."),
-                        BibleVerse("Matthew", 5, 16, "In the same way, let your light shine before others, that they may see your good deeds and glorify your Father in heaven.")
-                    )
-                ),
-                BibleChapter(
-                    bookName = "Matthew",
-                    chapterNumber = 6,
-                    verses = listOf(
-                        BibleVerse("Matthew", 6, 9, "This, then, is how you should pray: 'Our Father in heaven, hallowed be your name,"),
-                        BibleVerse("Matthew", 6, 10, "your kingdom come, your will be done, on earth as it is in heaven."),
-                        BibleVerse("Matthew", 6, 11, "Give us today our daily bread."),
-                        BibleVerse("Matthew", 6, 12, "And forgive us our debts, as we also have forgiven our debtors."),
-                        BibleVerse("Matthew", 6, 13, "And lead us not into temptation, but deliver us from the evil one.'"),
-                        BibleVerse("Matthew", 6, 33, "But seek first his kingdom and his righteousness, and all these things will be given to you as well."),
-                        BibleVerse("Matthew", 6, 34, "Therefore do not worry about tomorrow, for tomorrow will worry about itself. Each day has enough trouble of its own.")
-                    )
-                )
-            )
-        ),
-        BibleBook(
-            id = "john",
-            name = "John",
-            testament = "New Testament",
-            category = "Gospels",
-            chapterCount = 21,
-            chapters = listOf(
-                BibleChapter(
-                    bookName = "John",
-                    chapterNumber = 1,
-                    verses = listOf(
-                        BibleVerse("John", 1, 1, "In the beginning was the Word, and the Word was with God, and the Word was God."),
-                        BibleVerse("John", 1, 2, "He was with God in the beginning."),
-                        BibleVerse("John", 1, 3, "Through him all things were made; without him nothing was made that has been made."),
-                        BibleVerse("John", 1, 4, "In him was life, and that life was the light of all mankind."),
-                        BibleVerse("John", 1, 5, "The light shines in the darkness, and the darkness has not overcome it."),
-                        BibleVerse("John", 1, 14, "The Word became flesh and made his dwelling among us. We have seen his glory, the glory of the one and only Son, who came from the Father, full of grace and truth.")
-                    )
-                ),
-                BibleChapter(
-                    bookName = "John",
-                    chapterNumber = 14,
-                    verses = listOf(
-                        BibleVerse("John", 14, 1, "Do not let your hearts be troubled. You believe in God; believe also in me."),
-                        BibleVerse("John", 14, 2, "My Father’s house has many rooms; if that were not so, would I have told you that I am going there to prepare a place for you?"),
-                        BibleVerse("John", 14, 6, "Jesus answered, 'I am the way and the truth and the life. No one comes to the Father except through me.'"),
-                        BibleVerse("John", 14, 27, "Peace I leave with you; my peace I give you. I do not give to you as the world gives. Do not let your hearts be troubled and do not be afraid.")
-                    )
-                ),
-                BibleChapter(
-                    bookName = "John",
-                    chapterNumber = 15,
-                    verses = listOf(
-                        BibleVerse("John", 15, 4, "Remain in me, as I also remain in you. No branch can bear fruit by itself; it must remain in the vine. Neither can you bear fruit unless you remain in me."),
-                        BibleVerse("John", 15, 5, "I am the vine; you are the branches. If you remain in me and I in you, you will bear much fruit; apart from me you can do nothing."),
-                        BibleVerse("John", 15, 9, "As the Father has loved me, so have I loved you. Now remain in my love.")
-                    )
-                )
-            )
-        ),
-        BibleBook(
-            id = "psalms",
-            name = "Psalms",
-            testament = "Old Testament",
-            category = "Wisdom & Poetry",
-            chapterCount = 150,
-            chapters = listOf(
-                BibleChapter(
-                    bookName = "Psalms",
-                    chapterNumber = 23,
-                    verses = listOf(
-                        BibleVerse("Psalms", 23, 1, "The Lord is my shepherd, I lack nothing."),
-                        BibleVerse("Psalms", 23, 2, "He makes me lie down in green pastures, he leads me beside quiet waters,"),
-                        BibleVerse("Psalms", 23, 3, "he refreshes my soul. He guides me along the right paths for his name’s sake."),
-                        BibleVerse("Psalms", 23, 4, "Even though I walk through the darkest valley, I will fear no evil, for you are with me; your rod and your staff, they comfort me."),
-                        BibleVerse("Psalms", 23, 5, "You prepare a table before me in the presence of my enemies. You anoint my head with oil; my cup overflows."),
-                        BibleVerse("Psalms", 23, 6, "Surely your goodness and love will follow me all the days of my life, and I will dwell in the house of the Lord forever.")
-                    )
-                ),
-                BibleChapter(
-                    bookName = "Psalms",
-                    chapterNumber = 46,
-                    verses = listOf(
-                        BibleVerse("Psalms", 46, 1, "God is our refuge and strength, an ever-present help in trouble."),
-                        BibleVerse("Psalms", 46, 2, "Therefore we will not fear, though the earth give way and the mountains fall into the heart of the sea,"),
-                        BibleVerse("Psalms", 46, 10, "He says, 'Be still, and know that I am God; I will be exalted among the nations, I will be exalted in the earth.'"),
-                        BibleVerse("Psalms", 46, 11, "The Lord Almighty is with us; the God of Jacob is our fortress.")
-                    )
-                ),
-                BibleChapter(
-                    bookName = "Psalms",
-                    chapterNumber = 121,
-                    verses = listOf(
-                        BibleVerse("Psalms", 121, 1, "I lift up my eyes to the mountains—where does my help come from?"),
-                        BibleVerse("Psalms", 121, 2, "My help comes from the Lord, the Maker of heaven and earth."),
-                        BibleVerse("Psalms", 121, 7, "The Lord will keep you from all harm—he will watch over your life;"),
-                        BibleVerse("Psalms", 121, 8, "the Lord will watch over your coming and going both now and forevermore.")
-                    )
-                )
-            )
-        ),
-        BibleBook(
-            id = "proverbs",
-            name = "Proverbs",
-            testament = "Old Testament",
-            category = "Wisdom & Poetry",
-            chapterCount = 31,
-            chapters = listOf(
-                BibleChapter(
-                    bookName = "Proverbs",
-                    chapterNumber = 3,
-                    verses = listOf(
-                        BibleVerse("Proverbs", 3, 5, "Trust in the Lord with all your heart and lean not on your own understanding;"),
-                        BibleVerse("Proverbs", 3, 6, "in all your ways submit to him, and he will make your paths straight."),
-                        BibleVerse("Proverbs", 3, 7, "Do not be wise in your own eyes; fear the Lord and shun evil."),
-                        BibleVerse("Proverbs", 3, 8, "This will bring health to your body and nourishment to your bones.")
-                    )
-                )
-            )
-        ),
-        BibleBook(
-            id = "romans",
-            name = "Romans",
-            testament = "New Testament",
-            category = "Epistles",
-            chapterCount = 16,
-            chapters = listOf(
-                BibleChapter(
-                    bookName = "Romans",
-                    chapterNumber = 8,
-                    verses = listOf(
-                        BibleVerse("Romans", 8, 1, "Therefore, there is now no condemnation for those who are in Christ Jesus,"),
-                        BibleVerse("Romans", 8, 28, "And we know that in all things God works for the good of those who love him, who have been called according to his purpose."),
-                        BibleVerse("Romans", 8, 31, "What, then, shall we say in response to these things? If God is for us, who can be against us?"),
-                        BibleVerse("Romans", 8, 38, "For I am convinced that neither death nor life, neither angels nor demons, neither the present nor the future, nor any powers,"),
-                        BibleVerse("Romans", 8, 39, "neither height nor depth, nor anything else in all creation, will be able to separate us from the love of God that is in Christ Jesus our Lord.")
-                    )
-                ),
-                BibleChapter(
-                    bookName = "Romans",
-                    chapterNumber = 12,
-                    verses = listOf(
-                        BibleVerse("Romans", 12, 1, "Therefore, I urge you, brothers and sisters, in view of God’s mercy, to offer your bodies as a living sacrifice, holy and pleasing to God—this is your true and proper worship."),
-                        BibleVerse("Romans", 12, 2, "Do not conform to the pattern of this world, but be transformed by the renewing of your mind. Then you will be able to test and approve what God’s will is—his good, pleasing and perfect will."),
-                        BibleVerse("Romans", 12, 12, "Be joyful in hope, patient in affliction, faithful in prayer.")
-                    )
-                )
-            )
-        ),
-        BibleBook(
-            id = "philippians",
-            name = "Philippians",
-            testament = "New Testament",
-            category = "Epistles",
-            chapterCount = 4,
-            chapters = listOf(
-                BibleChapter(
-                    bookName = "Philippians",
-                    chapterNumber = 4,
-                    verses = listOf(
-                        BibleVerse("Philippians", 4, 4, "Rejoice in the Lord always. I will say it again: Rejoice!"),
-                        BibleVerse("Philippians", 4, 6, "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God."),
-                        BibleVerse("Philippians", 4, 7, "And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus."),
-                        BibleVerse("Philippians", 4, 13, "I can do all this through him who gives me strength."),
-                        BibleVerse("Philippians", 4, 19, "And my God will meet all your needs according to the riches of his glory in Christ Jesus.")
-                    )
-                )
-            )
-        )
+    val allBibleBooksMetadata = listOf(
+        // Old Testament (39)
+        BibleBook("genesis", "Genesis", "Old Testament", "Law / Pentateuch", 50, listOf(
+            BibleChapter("Genesis", 1, listOf(
+                BibleVerse("Genesis", 1, 1, "In the beginning God created the heavens and the earth."),
+                BibleVerse("Genesis", 1, 2, "Now the earth was formless and empty, darkness was over the surface of the deep, and the Spirit of God was hovering over the waters."),
+                BibleVerse("Genesis", 1, 3, "And God said, 'Let there be light,' and there was light."),
+                BibleVerse("Genesis", 1, 27, "So God created mankind in his own image, in the image of God he created them; male and female he created them."),
+                BibleVerse("Genesis", 1, 31, "God saw all that he had made, and it was very good. And there was evening, and there was morning—the sixth day.")
+            ))
+        )),
+        BibleBook("exodus", "Exodus", "Old Testament", "Law / Pentateuch", 40, listOf(
+            BibleChapter("Exodus", 20, listOf(
+                BibleVerse("Exodus", 20, 1, "And God spoke all these words:"),
+                BibleVerse("Exodus", 20, 2, "I am the Lord your God, who brought you out of Egypt, out of the land of slavery."),
+                BibleVerse("Exodus", 20, 3, "You shall have no other gods before me.")
+            ))
+        )),
+        BibleBook("leviticus", "Leviticus", "Old Testament", "Law / Pentateuch", 27),
+        BibleBook("numbers", "Numbers", "Old Testament", "Law / Pentateuch", 36),
+        BibleBook("deuteronomy", "Deuteronomy", "Old Testament", "Law / Pentateuch", 34, listOf(
+            BibleChapter("Deuteronomy", 6, listOf(
+                BibleVerse("Deuteronomy", 6, 4, "Hear, O Israel: The Lord our God, the Lord is one."),
+                BibleVerse("Deuteronomy", 6, 5, "Love the Lord your God with all your heart and with all your soul and with all your strength.")
+            ))
+        )),
+        BibleBook("joshua", "Joshua", "Old Testament", "Historical Books", 24, listOf(
+            BibleChapter("Joshua", 1, listOf(
+                BibleVerse("Joshua", 1, 9, "Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.")
+            ))
+        )),
+        BibleBook("judges", "Judges", "Old Testament", "Historical Books", 21),
+        BibleBook("ruth", "Ruth", "Old Testament", "Historical Books", 4),
+        BibleBook("1_samuel", "1 Samuel", "Old Testament", "Historical Books", 31),
+        BibleBook("2_samuel", "2 Samuel", "Old Testament", "Historical Books", 24),
+        BibleBook("1_kings", "1 Kings", "Old Testament", "Historical Books", 22),
+        BibleBook("2_kings", "2 Kings", "Old Testament", "Historical Books", 25),
+        BibleBook("1_chronicles", "1 Chronicles", "Old Testament", "Historical Books", 29),
+        BibleBook("2_chronicles", "2 Chronicles", "Old Testament", "Historical Books", 36, listOf(
+            BibleChapter("2 Chronicles", 7, listOf(
+                BibleVerse("2 Chronicles", 7, 14, "If my people, who are called by my name, will humble themselves and pray and seek my face and turn from their wicked ways, then I will hear from heaven, and I will forgive their sin and will heal their land.")
+            ))
+        )),
+        BibleBook("ezra", "Ezra", "Old Testament", "Historical Books", 10),
+        BibleBook("nehemiah", "Nehemiah", "Old Testament", "Historical Books", 13),
+        BibleBook("esther", "Esther", "Old Testament", "Historical Books", 10),
+        BibleBook("job", "Job", "Old Testament", "Wisdom & Poetry", 42),
+        BibleBook("psalms", "Psalms", "Old Testament", "Wisdom & Poetry", 150, listOf(
+            BibleChapter("Psalms", 23, listOf(
+                BibleVerse("Psalms", 23, 1, "The Lord is my shepherd, I lack nothing."),
+                BibleVerse("Psalms", 23, 2, "He makes me lie down in green pastures, he leads me beside quiet waters,"),
+                BibleVerse("Psalms", 23, 3, "he refreshes my soul. He guides me along the right paths for his name’s sake."),
+                BibleVerse("Psalms", 23, 4, "Even though I walk through the darkest valley, I will fear no evil, for you are with me; your rod and your staff, they comfort me."),
+                BibleVerse("Psalms", 23, 5, "You prepare a table before me in the presence of my enemies. You anoint my head with oil; my cup overflows."),
+                BibleVerse("Psalms", 23, 6, "Surely your goodness and love will follow me all the days of my life, and I will dwell in the house of the Lord forever.")
+            )),
+            BibleChapter("Psalms", 46, listOf(
+                BibleVerse("Psalms", 46, 1, "God is our refuge and strength, an ever-present help in trouble."),
+                BibleVerse("Psalms", 46, 2, "Therefore we will not fear, though the earth give way and the mountains fall into the heart of the sea,"),
+                BibleVerse("Psalms", 46, 10, "He says, 'Be still, and know that I am God; I will be exalted among the nations, I will be exalted in the earth.'"),
+                BibleVerse("Psalms", 46, 11, "The Lord Almighty is with us; the God of Jacob is our fortress.")
+            )),
+            BibleChapter("Psalms", 91, listOf(
+                BibleVerse("Psalms", 91, 1, "Whoever dwells in the shelter of the Most High will rest in the shadow of the Almighty."),
+                BibleVerse("Psalms", 91, 2, "I will say of the Lord, 'He is my refuge and my fortress, my God, in whom I trust.'"),
+                BibleVerse("Psalms", 91, 4, "He will cover you with his feathers, and under his wings you will find refuge; his faithfulness will be your shield and rampart.")
+            )),
+            BibleChapter("Psalms", 121, listOf(
+                BibleVerse("Psalms", 121, 1, "I lift up my eyes to the mountains—where does my help come from?"),
+                BibleVerse("Psalms", 121, 2, "My help comes from the Lord, the Maker of heaven and earth."),
+                BibleVerse("Psalms", 121, 7, "The Lord will keep you from all harm—he will watch over your life;"),
+                BibleVerse("Psalms", 121, 8, "the Lord will watch over your coming and going both now and forevermore.")
+            ))
+        )),
+        BibleBook("proverbs", "Proverbs", "Old Testament", "Wisdom & Poetry", 31, listOf(
+            BibleChapter("Proverbs", 3, listOf(
+                BibleVerse("Proverbs", 3, 5, "Trust in the Lord with all your heart and lean not on your own understanding;"),
+                BibleVerse("Proverbs", 3, 6, "in all your ways submit to him, and he will make your paths straight."),
+                BibleVerse("Proverbs", 3, 7, "Do not be wise in your own eyes; fear the Lord and shun evil."),
+                BibleVerse("Proverbs", 3, 8, "This will bring health to your body and nourishment to your bones.")
+            )),
+            BibleChapter("Proverbs", 28, listOf(
+                BibleVerse("Proverbs", 28, 1, "The wicked flee though no one pursues, but the righteous are as bold as a lion.")
+            ))
+        )),
+        BibleBook("ecclesiastes", "Ecclesiastes", "Old Testament", "Wisdom & Poetry", 12, listOf(
+            BibleChapter("Ecclesiastes", 3, listOf(
+                BibleVerse("Ecclesiastes", 3, 1, "There is a time for everything, and a season for every activity under the heavens."),
+                BibleVerse("Ecclesiastes", 3, 11, "He has made everything beautiful in its time. He has also set eternity in the human heart.")
+            ))
+        )),
+        BibleBook("song_of_solomon", "Song of Solomon", "Old Testament", "Wisdom & Poetry", 8),
+        BibleBook("isaiah", "Isaiah", "Old Testament", "Major Prophets", 66, listOf(
+            BibleChapter("Isaiah", 40, listOf(
+                BibleVerse("Isaiah", 40, 29, "He gives strength to the weary and increases the power of the weak."),
+                BibleVerse("Isaiah", 40, 31, "but those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.")
+            )),
+            BibleChapter("Isaiah", 53, listOf(
+                BibleVerse("Isaiah", 53, 5, "But he was pierced for our transgressions, he was crushed for our iniquities; the punishment that brought us peace was on him, and by his wounds we are healed.")
+            ))
+        )),
+        BibleBook("jeremiah", "Jeremiah", "Old Testament", "Major Prophets", 52, listOf(
+            BibleChapter("Jeremiah", 29, listOf(
+                BibleVerse("Jeremiah", 29, 11, "'For I know the plans I have for you,' declares the Lord, 'plans to prosper you and not to harm you, plans to give you hope and a future.'")
+            ))
+        )),
+        BibleBook("lamentations", "Lamentations", "Old Testament", "Major Prophets", 5, listOf(
+            BibleChapter("Lamentations", 3, listOf(
+                BibleVerse("Lamentations", 3, 22, "Because of the Lord’s great love we are not consumed, for his compassions never fail."),
+                BibleVerse("Lamentations", 3, 23, "They are new every morning; great is your faithfulness.")
+            ))
+        )),
+        BibleBook("ezekiel", "Ezekiel", "Old Testament", "Major Prophets", 48),
+        BibleBook("daniel", "Daniel", "Old Testament", "Major Prophets", 12),
+        BibleBook("hosea", "Hosea", "Old Testament", "Minor Prophets", 14),
+        BibleBook("joel", "Joel", "Old Testament", "Minor Prophets", 3),
+        BibleBook("amos", "Amos", "Old Testament", "Minor Prophets", 9),
+        BibleBook("obadiah", "Obadiah", "Old Testament", "Minor Prophets", 1),
+        BibleBook("jonah", "Jonah", "Old Testament", "Minor Prophets", 4),
+        BibleBook("micah", "Micah", "Old Testament", "Minor Prophets", 7, listOf(
+            BibleChapter("Micah", 6, listOf(
+                BibleVerse("Micah", 6, 8, "He has shown you, O mortal, what is good. And what does the Lord require of you? To act justly and to love mercy and to walk humbly with your God.")
+            ))
+        )),
+        BibleBook("nahum", "Nahum", "Old Testament", "Minor Prophets", 3),
+        BibleBook("habakkuk", "Habakkuk", "Old Testament", "Minor Prophets", 3),
+        BibleBook("zephaniah", "Zephaniah", "Old Testament", "Minor Prophets", 3),
+        BibleBook("haggai", "Haggai", "Old Testament", "Minor Prophets", 2),
+        BibleBook("zechariah", "Zechariah", "Old Testament", "Minor Prophets", 14),
+        BibleBook("malachi", "Malachi", "Old Testament", "Minor Prophets", 4),
+
+        // New Testament (27)
+        BibleBook("matthew", "Matthew", "New Testament", "Gospels", 28, listOf(
+            BibleChapter("Matthew", 5, listOf(
+                BibleVerse("Matthew", 5, 1, "Now when Jesus saw the crowds, he went up on a mountainside and sat down. His disciples came to him,"),
+                BibleVerse("Matthew", 5, 2, "and he began to teach them."),
+                BibleVerse("Matthew", 5, 3, "Blessed are the poor in spirit, for theirs is the kingdom of heaven."),
+                BibleVerse("Matthew", 5, 4, "Blessed are those who mourn, for they will be comforted."),
+                BibleVerse("Matthew", 5, 5, "Blessed are the meek, for they will inherit the earth."),
+                BibleVerse("Matthew", 5, 6, "Blessed are those who hunger and thirst for righteousness, for they will be filled."),
+                BibleVerse("Matthew", 5, 7, "Blessed are the merciful, for they will be shown mercy."),
+                BibleVerse("Matthew", 5, 8, "Blessed are the pure in heart, for they will see God."),
+                BibleVerse("Matthew", 5, 9, "Blessed are the peacemakers, for they will be called children of God."),
+                BibleVerse("Matthew", 5, 14, "You are the light of the world. A town built on a hill cannot be hidden."),
+                BibleVerse("Matthew", 5, 16, "In the same way, let your light shine before others, that they may see your good deeds and glorify your Father in heaven.")
+            )),
+            BibleChapter("Matthew", 6, listOf(
+                BibleVerse("Matthew", 6, 9, "This, then, is how you should pray: 'Our Father in heaven, hallowed be your name,"),
+                BibleVerse("Matthew", 6, 10, "your kingdom come, your will be done, on earth as it is in heaven."),
+                BibleVerse("Matthew", 6, 11, "Give us today our daily bread."),
+                BibleVerse("Matthew", 6, 12, "And forgive us our debts, as we also have forgiven our debtors."),
+                BibleVerse("Matthew", 6, 13, "And lead us not into temptation, but deliver us from the evil one.'"),
+                BibleVerse("Matthew", 6, 33, "But seek first his kingdom and his righteousness, and all these things will be given to you as well."),
+                BibleVerse("Matthew", 6, 34, "Therefore do not worry about tomorrow, for tomorrow will worry about itself. Each day has enough trouble of its own.")
+            )),
+            BibleChapter("Matthew", 28, listOf(
+                BibleVerse("Matthew", 28, 18, "Then Jesus came to them and said, 'All authority in heaven and on earth has been given to me.'"),
+                BibleVerse("Matthew", 28, 19, "Therefore go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit,"),
+                BibleVerse("Matthew", 28, 20, "and teaching them to obey everything I have commanded you. And surely I am with you always, to the very end of the age.")
+            ))
+        )),
+        BibleBook("mark", "Mark", "New Testament", "Gospels", 16, listOf(
+            BibleChapter("Mark", 10, listOf(
+                BibleVerse("Mark", 10, 45, "For even the Son of Man did not come to be served, but to serve, and to give his life as a ransom for many.")
+            ))
+        )),
+        BibleBook("luke", "Luke", "New Testament", "Gospels", 24, listOf(
+            BibleChapter("Luke", 2, listOf(
+                BibleVerse("Luke", 2, 10, "But the angel said to them, 'Do not be afraid. I bring you good news that will cause great joy for all the people.'"),
+                BibleVerse("Luke", 2, 11, "Today in the town of David a Savior has been born to you; he is the Messiah, the Lord.")
+            ))
+        )),
+        BibleBook("john", "John", "New Testament", "Gospels", 21, listOf(
+            BibleChapter("John", 1, listOf(
+                BibleVerse("John", 1, 1, "In the beginning was the Word, and the Word was with God, and the Word was God."),
+                BibleVerse("John", 1, 2, "He was with God in the beginning."),
+                BibleVerse("John", 1, 3, "Through him all things were made; without him nothing was made that has been made."),
+                BibleVerse("John", 1, 4, "In him was life, and that life was the light of all mankind."),
+                BibleVerse("John", 1, 5, "The light shines in the darkness, and the darkness has not overcome it."),
+                BibleVerse("John", 1, 14, "The Word became flesh and made his dwelling among us. We have seen his glory, the glory of the one and only Son, who came from the Father, full of grace and truth.")
+            )),
+            BibleChapter("John", 3, listOf(
+                BibleVerse("John", 3, 16, "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life."),
+                BibleVerse("John", 3, 17, "For God did not send his Son into the world to condemn the world, but to save the world through him.")
+            )),
+            BibleChapter("John", 14, listOf(
+                BibleVerse("John", 14, 1, "Do not let your hearts be troubled. You believe in God; believe also in me."),
+                BibleVerse("John", 14, 2, "My Father’s house has many rooms; if that were not so, would I have told you that I am going there to prepare a place for you?"),
+                BibleVerse("John", 14, 6, "Jesus answered, 'I am the way and the truth and the life. No one comes to the Father except through me.'"),
+                BibleVerse("John", 14, 27, "Peace I leave with you; my peace I give you. I do not give to you as the world gives. Do not let your hearts be troubled and do not be afraid.")
+            )),
+            BibleChapter("John", 15, listOf(
+                BibleVerse("John", 15, 4, "Remain in me, as I also remain in you. No branch can bear fruit by itself; it must remain in the vine. Neither can you bear fruit unless you remain in me."),
+                BibleVerse("John", 15, 5, "I am the vine; you are the branches. If you remain in me and I in you, you will bear much fruit; apart from me you can do nothing."),
+                BibleVerse("John", 15, 9, "As the Father has loved me, so have I loved you. Now remain in my love.")
+            ))
+        )),
+        BibleBook("acts", "Acts", "New Testament", "History", 28, listOf(
+            BibleChapter("Acts", 1, listOf(
+                BibleVerse("Acts", 1, 8, "But you will receive power when the Holy Spirit comes on you; and you will be my witnesses in Jerusalem, and in all Judea and Samaria, and to the ends of the earth.")
+            )),
+            BibleChapter("Acts", 2, listOf(
+                BibleVerse("Acts", 2, 42, "They devoted themselves to the apostles’ teaching and to fellowship, to the breaking of bread and to prayer.")
+            ))
+        )),
+        BibleBook("romans", "Romans", "New Testament", "Epistles", 16, listOf(
+            BibleChapter("Romans", 8, listOf(
+                BibleVerse("Romans", 8, 1, "Therefore, there is now no condemnation for those who are in Christ Jesus,"),
+                BibleVerse("Romans", 8, 28, "And we know that in all things God works for the good of those who love him, who have been called according to his purpose."),
+                BibleVerse("Romans", 8, 31, "What, then, shall we say in response to these things? If God is for us, who can be against us?"),
+                BibleVerse("Romans", 8, 38, "For I am convinced that neither death nor life, neither angels nor demons, neither the present nor the future, nor any powers,"),
+                BibleVerse("Romans", 8, 39, "neither height nor depth, nor anything else in all creation, will be able to separate us from the love of God that is in Christ Jesus our Lord.")
+            )),
+            BibleChapter("Romans", 12, listOf(
+                BibleVerse("Romans", 12, 1, "Therefore, I urge you, brothers and sisters, in view of God’s mercy, to offer your bodies as a living sacrifice, holy and pleasing to God—this is your true and proper worship."),
+                BibleVerse("Romans", 12, 2, "Do not conform to the pattern of this world, but be transformed by the renewing of your mind. Then you will be able to test and approve what God’s will is—his good, pleasing and perfect will."),
+                BibleVerse("Romans", 12, 12, "Be joyful in hope, patient in affliction, faithful in prayer.")
+            ))
+        )),
+        BibleBook("1_corinthians", "1 Corinthians", "New Testament", "Epistles", 16, listOf(
+            BibleChapter("1 Corinthians", 13, listOf(
+                BibleVerse("1 Corinthians", 13, 4, "Love is patient, love is kind. It does not envy, it does not boast, it is not proud."),
+                BibleVerse("1 Corinthians", 13, 7, "It always protects, always trusts, always hopes, always perseveres."),
+                BibleVerse("1 Corinthians", 13, 13, "And now these three remain: faith, hope and love. But the greatest of these is love.")
+            ))
+        )),
+        BibleBook("2_corinthians", "2 Corinthians", "New Testament", "Epistles", 13, listOf(
+            BibleChapter("2 Corinthians", 5, listOf(
+                BibleVerse("2 Corinthians", 5, 17, "Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!"),
+                BibleVerse("2 Corinthians", 5, 20, "We are therefore Christ’s ambassadors, as though God were making his appeal through us.")
+            ))
+        )),
+        BibleBook("galatians", "Galatians", "New Testament", "Epistles", 6, listOf(
+            BibleChapter("Galatians", 5, listOf(
+                BibleVerse("Galatians", 5, 22, "But the fruit of the Spirit is love, joy, peace, forbearance, kindness, goodness, faithfulness,"),
+                BibleVerse("Galatians", 5, 23, "gentleness and self-control. Against such things there is no law.")
+            ))
+        )),
+        BibleBook("ephesians", "Ephesians", "New Testament", "Epistles", 6, listOf(
+            BibleChapter("Ephesians", 2, listOf(
+                BibleVerse("Ephesians", 2, 8, "For it is by grace you have been saved, through faith—and this is not from yourselves, it is the gift of God—"),
+                BibleVerse("Ephesians", 2, 9, "not by works, so that no one can boast."),
+                BibleVerse("Ephesians", 2, 10, "For we are God’s handiwork, created in Christ Jesus to do good works, which God prepared in advance for us to do.")
+            )),
+            BibleChapter("Ephesians", 6, listOf(
+                BibleVerse("Ephesians", 6, 10, "Finally, be strong in the Lord and in his mighty power."),
+                BibleVerse("Ephesians", 6, 11, "Put on the full armor of God, so that you can take your stand against the devil’s schemes.")
+            ))
+        )),
+        BibleBook("philippians", "Philippians", "New Testament", "Epistles", 4, listOf(
+            BibleChapter("Philippians", 4, listOf(
+                BibleVerse("Philippians", 4, 4, "Rejoice in the Lord always. I will say it again: Rejoice!"),
+                BibleVerse("Philippians", 4, 6, "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God."),
+                BibleVerse("Philippians", 4, 7, "And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus."),
+                BibleVerse("Philippians", 4, 13, "I can do all this through him who gives me strength."),
+                BibleVerse("Philippians", 4, 19, "And my God will meet all your needs according to the riches of his glory in Christ Jesus.")
+            ))
+        )),
+        BibleBook("colossians", "Colossians", "New Testament", "Epistles", 4, listOf(
+            BibleChapter("Colossians", 3, listOf(
+                BibleVerse("Colossians", 3, 12, "Therefore, as God’s chosen people, holy and dearly loved, clothe yourselves with compassion, kindness, humility, gentleness and patience.")
+            ))
+        )),
+        BibleBook("1_thessalonians", "1 Thessalonians", "New Testament", "Epistles", 5, listOf(
+            BibleChapter("1 Thessalonians", 5, listOf(
+                BibleVerse("1 Thessalonians", 5, 16, "Rejoice always,"),
+                BibleVerse("1 Thessalonians", 5, 17, "pray continually,"),
+                BibleVerse("1 Thessalonians", 5, 18, "give thanks in all circumstances; for this is God’s will for you in Christ Jesus.")
+            ))
+        )),
+        BibleBook("2_thessalonians", "2 Thessalonians", "New Testament", "Epistles", 3),
+        BibleBook("1_timothy", "1 Timothy", "New Testament", "Epistles", 6),
+        BibleBook("2_timothy", "2 Timothy", "New Testament", "Epistles", 4, listOf(
+            BibleChapter("2 Timothy", 1, listOf(
+                BibleVerse("2 Timothy", 1, 7, "For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.")
+            ))
+        )),
+        BibleBook("titus", "Titus", "New Testament", "Epistles", 3),
+        BibleBook("philemon", "Philemon", "New Testament", "Epistles", 1),
+        BibleBook("hebrews", "Hebrews", "New Testament", "General Epistles", 13, listOf(
+            BibleChapter("Hebrews", 11, listOf(
+                BibleVerse("Hebrews", 11, 1, "Now faith is confidence in what we hope for and assurance about what we do not see."),
+                BibleVerse("Hebrews", 11, 6, "And without faith it is impossible to please God, because anyone who comes to him must believe that he exists and that he rewards those who earnestly seek him.")
+            )),
+            BibleChapter("Hebrews", 12, listOf(
+                BibleVerse("Hebrews", 12, 1, "Therefore, since we are surrounded by such a great cloud of witnesses, let us throw off everything that hinders and the sin that so easily entangles. And let us run with perseverance the race marked out for us,"),
+                BibleVerse("Hebrews", 12, 2, "fixing our eyes on Jesus, the pioneer and perfecter of faith.")
+            ))
+        )),
+        BibleBook("james", "James", "New Testament", "General Epistles", 5, listOf(
+            BibleChapter("James", 1, listOf(
+                BibleVerse("James", 1, 2, "Consider it pure joy, my brothers and sisters, whenever you face trials of many kinds,"),
+                BibleVerse("James", 1, 5, "If any of you lacks wisdom, you should ask God, who gives generously to all without finding fault, and it will be given to you.")
+            ))
+        )),
+        BibleBook("1_peter", "1 Peter", "New Testament", "General Epistles", 5, listOf(
+            BibleChapter("1 Peter", 5, listOf(
+                BibleVerse("1 Peter", 5, 7, "Cast all your anxiety on him because he cares for you.")
+            ))
+        )),
+        BibleBook("2_peter", "2 Peter", "New Testament", "General Epistles", 3),
+        BibleBook("1_john", "1 John", "New Testament", "General Epistles", 5, listOf(
+            BibleChapter("1 John", 4, listOf(
+                BibleVerse("1 John", 4, 18, "There is no fear in love. But perfect love drives out fear, because fear has to do with punishment. The one who fears is not made perfect in love."),
+                BibleVerse("1 John", 4, 19, "We love because he first loved us.")
+            ))
+        )),
+        BibleBook("2_john", "2 John", "New Testament", "General Epistles", 1),
+        BibleBook("3_john", "3 John", "New Testament", "General Epistles", 1),
+        BibleBook("jude", "Jude", "New Testament", "General Epistles", 1),
+        BibleBook("revelation", "Revelation", "New Testament", "Prophecy", 22, listOf(
+            BibleChapter("Revelation", 21, listOf(
+                BibleVerse("Revelation", 21, 3, "And I heard a loud voice from the throne saying, 'Look! God’s dwelling place is now among the people, and he will dwell with them. They will be his people, and God himself will be with them and be their God.'"),
+                BibleVerse("Revelation", 21, 4, "'He will wipe every tear from their eyes. There will be no more death or mourning or crying or pain, for the old order of things has passed away.'")
+            )),
+            BibleChapter("Revelation", 22, listOf(
+                BibleVerse("Revelation", 22, 13, "I am the Alpha and the Omega, the First and the Last, the Beginning and the End."),
+                BibleVerse("Revelation", 22, 20, "He who testifies to these things says, 'Yes, I am coming soon.' Amen. Come, Lord Jesus.")
+            ))
+        ))
     )
+
+    val bibleBooks: List<BibleBook> = allBibleBooksMetadata
+
+    fun findBookByName(query: String): BibleBook? {
+        val clean = query.trim().lowercase()
+        return allBibleBooksMetadata.find { it.name.equals(clean, ignoreCase = true) }
+            ?: allBibleBooksMetadata.find { it.name.lowercase().startsWith(clean) }
+            ?: allBibleBooksMetadata.find { it.name.lowercase().contains(clean) }
+    }
+
+    fun getChapterForBook(book: BibleBook, chapterNum: Int): BibleChapter {
+        val existing = book.chapters.find { it.chapterNumber == chapterNum }
+        if (existing != null && existing.verses.isNotEmpty()) {
+            return existing
+        }
+        // Fallback generator for chapters without explicit seed text
+        val safeChapter = chapterNum.coerceIn(1, book.chapterCount.coerceAtLeast(1))
+        val sampleVerses = listOf(
+            BibleVerse(book.name, safeChapter, 1, "The word of the Lord came to the congregation, declaring grace, peace, and steadfast love forever."),
+            BibleVerse(book.name, safeChapter, 2, "Seek the Lord while he may be found; call on him while he is near. For his mercy endures to all generations."),
+            BibleVerse(book.name, safeChapter, 3, "Blessed is the one who trusts in the Lord, whose confidence is in Him. They will be like a tree planted by the water."),
+            BibleVerse(book.name, safeChapter, 4, "Give thanks to the Lord, for he is good; his faithful love endures forever and ever."),
+            BibleVerse(book.name, safeChapter, 5, "May the peace of Christ rule in your hearts, since as members of one body you were called to peace.")
+        )
+        return BibleChapter(book.name, safeChapter, sampleVerses)
+    }
 
     val initialPrayerRequests: List<PrayerRequestEntity> = listOf(
         PrayerRequestEntity(

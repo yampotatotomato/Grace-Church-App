@@ -29,6 +29,7 @@ data class ChurchUiState(
     // Scripture state
     val selectedBook: BibleBook = ChurchDataSeed.bibleBooks.first(),
     val selectedChapterNumber: Int = 5,
+    val selectedVerseNumber: Int? = null,
     val selectedTranslation: String = "NIV",
     val readerFontSizeSp: Float = 17f,
     val scriptureSearchQuery: String = "",
@@ -119,22 +120,42 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
         _uiState.update { it.copy(selectedTab = tab) }
     }
 
-    fun setScriptureBook(book: BibleBook, chapterNum: Int = 1) {
-        val validChapter = if (book.chapters.isNotEmpty()) {
-            book.chapters.firstOrNull()?.chapterNumber ?: 1
+    fun setScriptureBook(book: BibleBook, chapterNum: Int = 1, verseNum: Int? = null) {
+        val safeChapter = if (book.chapters.isNotEmpty()) {
+            book.chapters.find { it.chapterNumber == chapterNum }?.chapterNumber
+                ?: book.chapters.firstOrNull()?.chapterNumber ?: 1
         } else {
-            1
+            chapterNum.coerceIn(1, book.chapterCount.coerceAtLeast(1))
         }
         _uiState.update {
             it.copy(
                 selectedBook = book,
-                selectedChapterNumber = validChapter
+                selectedChapterNumber = safeChapter,
+                selectedVerseNumber = verseNum
             )
         }
     }
 
-    fun setScriptureChapter(chapterNum: Int) {
-        _uiState.update { it.copy(selectedChapterNumber = chapterNum) }
+    fun setScriptureChapter(chapterNum: Int, verseNum: Int? = null) {
+        val maxChapters = _uiState.value.selectedBook.chapterCount.coerceAtLeast(1)
+        val validChapter = chapterNum.coerceIn(1, maxChapters)
+        _uiState.update {
+            it.copy(
+                selectedChapterNumber = validChapter,
+                selectedVerseNumber = verseNum
+            )
+        }
+    }
+
+    fun setScriptureVerse(verseNum: Int?) {
+        _uiState.update { it.copy(selectedVerseNumber = verseNum) }
+    }
+
+    fun setScripturePassage(bookName: String, chapterNum: Int, verseNum: Int? = null) {
+        val foundBook = ChurchDataSeed.findBookByName(bookName)
+        if (foundBook != null) {
+            setScriptureBook(foundBook, chapterNum, verseNum)
+        }
     }
 
     fun setTranslation(translation: String) {
