@@ -51,11 +51,17 @@ data class Pastor(
     val name: String,
     val title: String,
     val bio: String,
+    val education: String = "",
+    val yearsOfMinistry: String = "",
+    val officeLocation: String = "",
     val email: String,
     val phone: String,
     val officeHours: String,
+    val availabilityStatus: String = "Available for Guidance",
     val photoRes: Int = 0,
-    val specialty: List<String> = listOf("Marriage & Family", "Spiritual Growth", "Biblical Counseling")
+    val specialty: List<String> = listOf("Marriage & Family", "Spiritual Growth", "Biblical Counseling"),
+    val favoriteScripture: String = "Proverbs 3:5-6",
+    val guidancePromptStarters: List<String> = listOf("Seeking wisdom on God's calling", "Praying through life transition", "Marriage & family guidance")
 )
 
 data class Devotional(

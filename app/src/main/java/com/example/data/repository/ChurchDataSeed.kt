@@ -10,41 +10,101 @@ object ChurchDataSeed {
             id = "pastor_david",
             name = "Dr. David Sterling",
             title = "Senior Pastor",
-            bio = "Dr. David Sterling has served Grace Church for over 16 years. He holds a Ph.D. in New Testament theology from Oxford and has a heart for gospel-centered expository preaching and community transformation.",
+            bio = "Dr. David Sterling has served Grace Church for over 16 years. He holds a Ph.D. in New Testament theology from Oxford and is devoted to gospel-centered expository preaching, theological discernment, and shepherding families into deeper faith in Christ.",
+            education = "Ph.D. New Testament (Oxford University) • M.Div. (Trinity)",
+            yearsOfMinistry = "16+ Years at Grace Church",
+            officeLocation = "Main Sanctuary, Suite 101",
             email = "pastor.david@gracechurch.org",
             phone = "(555) 234-8901",
             officeHours = "Tue & Thu: 9:00 AM – 3:00 PM",
-            specialty = listOf("Expository Preaching", "Leadership", "Theological Counseling")
+            availabilityStatus = "Available for Guidance",
+            specialty = listOf("Expository Preaching", "Theological Counseling", "Pastoral Mentorship", "Biblical Discernment"),
+            favoriteScripture = "Romans 8:38-39",
+            guidancePromptStarters = listOf(
+                "Seeking clarity on God's calling in my career",
+                "Questions regarding scripture passage or doctrine",
+                "Personal prayer for wisdom in leadership"
+            )
         ),
         Pastor(
             id = "pastor_sarah",
             name = "Pastor Sarah Jenkins",
-            title = "Executive & Pastoral Care",
-            bio = "Pastor Sarah oversees family ministry and pastoral care. With a Master of Divinity and certification in Christian counseling, she brings warmth and biblical empathy to every pastoral meeting.",
+            title = "Executive & Pastoral Care Pastor",
+            bio = "Pastor Sarah oversees pastoral care and compassionate family ministry. With an M.Div. and licensed Christian counseling certification, she brings heartfelt empathy and biblical truth to people walking through grief, marital hurdles, or life transitions.",
+            education = "M.Div. (Gordon-Conwell) • Licensed Christian Counselor (LPC)",
+            yearsOfMinistry = "12+ Years Pastoral Care",
+            officeLocation = "Pastoral Care Center, Room 204",
             email = "sarah.jenkins@gracechurch.org",
             phone = "(555) 234-8902",
             officeHours = "Mon, Wed & Fri: 10:00 AM – 4:00 PM",
-            specialty = listOf("Grief & Recovery", "Marriage Counseling", "Women's Ministry")
+            availabilityStatus = "Accepting Counseling Requests",
+            specialty = listOf("Biblical Counseling", "Marriage & Family", "Grief & Healing", "Emotional Health"),
+            favoriteScripture = "Psalm 34:18",
+            guidancePromptStarters = listOf(
+                "Need counseling for a family or relationship trial",
+                "Navigating grief and seeking God's peace",
+                "Confidential pastoral prayer and support"
+            )
         ),
         Pastor(
             id = "pastor_marcus",
             name = "Pastor Marcus Hayes",
             title = "Youth & Young Adults Pastor",
-            bio = "Marcus is deeply passionate about mentoring the next generation in deep theological truth and cultural discernment. He organizes weekly collegiate prayer networks and local outreach initiatives.",
+            bio = "Marcus is deeply passionate about discipling the next generation in deep theological truth and cultural discernment. He organizes weekly collegiate prayer networks, student mentorships, and local community service initiatives.",
+            education = "M.A. Discipleship & Culture (Wheaton College)",
+            yearsOfMinistry = "8+ Years Youth & Young Adult Ministry",
+            officeLocation = "Youth Ministry Loft, 3rd Floor",
             email = "marcus.hayes@gracechurch.org",
             phone = "(555) 234-8903",
             officeHours = "Wed & Thu: 1:00 PM – 6:00 PM",
-            specialty = listOf("Young Adults", "Discipleship", "Campus Outreach")
+            availabilityStatus = "Available for Discipleship",
+            specialty = listOf("Young Adults Discipleship", "Campus Outreach", "Faith & Culture", "Vocation Discernment"),
+            favoriteScripture = "1 Timothy 4:12",
+            guidancePromptStarters = listOf(
+                "Navigating faith and doubts at college/work",
+                "Looking for young adult fellowship and mentorship",
+                "Discerning next steps after graduation"
+            )
         ),
         Pastor(
             id = "pastor_elena",
             name = "Pastor Elena Vance",
             title = "Worship & Prayer Ministries Pastor",
-            bio = "Elena leads Grace Church's worship teams and oversees regional intercessory prayer networks. She trains small group facilitators in biblical liturgical prayer and spiritual disciplines.",
+            bio = "Elena leads Grace Church's worship teams and directs city-wide intercessory prayer networks. She mentors believers in liturgical prayer, personal devotional stillness, and deepening an intimate walk with the Holy Spirit.",
+            education = "M.A. Worship Studies & Spiritual Formation (Regent College)",
+            yearsOfMinistry = "10+ Years Worship & Intercession",
+            officeLocation = "Worship Arts Suite, Studio B",
             email = "elena.vance@gracechurch.org",
             phone = "(555) 234-8904",
             officeHours = "Tue & Fri: 11:00 AM – 4:00 PM",
-            specialty = listOf("Intercessory Prayer", "Worship Arts", "Spiritual Formation")
+            availabilityStatus = "Available for Prayer & Spiritual Formation",
+            specialty = listOf("Intercessory Prayer", "Spiritual Formation", "Worship Arts", "Contemplative Devotion"),
+            favoriteScripture = "Psalm 27:4",
+            guidancePromptStarters = listOf(
+                "Seeking guidance to develop a deeper prayer life",
+                "Requesting targeted intercessory prayer for healing",
+                "Growing in spiritual disciplines and stillness"
+            )
+        ),
+        Pastor(
+            id = "pastor_jonathan",
+            name = "Pastor Jonathan Miller",
+            title = "Community Outreach & Missions Pastor",
+            bio = "Pastor Jonathan leads Grace Church's local benevolence programs, homeless outreach, and global missionary partnerships. He loves helping church members discover and activate their spiritual gifts in service.",
+            education = "M.Div. Urban Missiology (Biola University)",
+            yearsOfMinistry = "9+ Years Urban Missions",
+            officeLocation = "Community Outreach Annex, Room 108",
+            email = "jonathan.miller@gracechurch.org",
+            phone = "(555) 234-8905",
+            officeHours = "Mon & Thu: 10:00 AM – 3:00 PM",
+            availabilityStatus = "Available for Outreach Guidance",
+            specialty = listOf("Local Missions", "Benevolence Care", "Spiritual Gifts Discovery", "Community Outreach"),
+            favoriteScripture = "Micah 6:8",
+            guidancePromptStarters = listOf(
+                "How can I discover my spiritual gifts for ministry?",
+                "Connecting with local community outreach projects",
+                "Benevolence and support for a family in crisis"
+            )
         )
     )
 

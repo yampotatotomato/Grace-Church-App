@@ -52,11 +52,16 @@ data class PastorMessageEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val pastorId: String,
     val pastorName: String,
+    val pastorTitle: String = "Pastor",
     val senderName: String,
     val senderEmail: String,
-    val messageType: String, // "Prayer Request", "Counseling", "General"
+    val messageType: String, // "Spiritual Guidance", "Biblical Counseling", "Prayer Request", "Scripture Question", "General"
+    val urgency: String = "Standard", // "Standard", "Urgent Care", "Confidential Meeting"
+    val subject: String = "Pastoral Guidance Request",
     val content: String,
-    val responseStatus: String = "Received",
+    val pastorReply: String = "",
+    val scriptureGuidance: String = "",
+    val responseStatus: String = "Received", // "Received", "Guidance Provided", "In Prayer", "Meeting Scheduled"
     val timestamp: Long = System.currentTimeMillis()
 )
 

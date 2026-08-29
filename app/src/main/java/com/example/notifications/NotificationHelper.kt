@@ -139,13 +139,46 @@ object NotificationHelper {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_COMMUNITY)
             .setSmallIcon(android.R.drawable.ic_dialog_email)
-            .setContentTitle("Message Sent to $pastorName")
-            .setContentText("Your prayer / counseling request was received by the pastoral office.")
+            .setContentTitle("Guidance Request Sent to $pastorName")
+            .setContentText("Your request was received by the pastoral office.")
             .setStyle(
                 NotificationCompat.BigTextStyle()
-                    .bigText("Your request was submitted to $pastorName.\n\n\"$preview\"\n\nThe pastoral team will pray over this and contact you soon.")
+                    .bigText("Your guidance request was submitted to $pastorName.\n\n\"$preview\"\n\nThe pastoral office will provide biblical counsel and prayer.")
             )
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        try {
+            NotificationManagerCompat.from(context).notify(NOTIF_ID_COMMUNITY, notification)
+        } catch (e: SecurityException) {
+            // Permission handling
+        }
+    }
+
+    fun sendPastorGuidanceRepliedNotification(context: Context, pastorName: String, preview: String, scripture: String) {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("EXTRA_NAV_TARGET", "pastors")
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            3,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_COMMUNITY)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("New Guidance from $pastorName")
+            .setContentText("$pastorName responded to your guidance request: \"$preview\"")
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText("$pastorName sent you biblical guidance & prayer:\n\n\"$preview\"\n\n📖 Scripture Focus: $scripture")
+                    .setSummaryText("Pastoral Guidance")
+            )
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()

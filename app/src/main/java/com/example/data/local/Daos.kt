@@ -73,8 +73,20 @@ interface PastorMessageDao {
     @Query("SELECT * FROM pastor_messages ORDER BY timestamp DESC")
     fun getAllMessages(): Flow<List<PastorMessageEntity>>
 
+    @Query("SELECT * FROM pastor_messages WHERE pastorId = :pastorId ORDER BY timestamp DESC")
+    fun getMessagesForPastor(pastorId: String): Flow<List<PastorMessageEntity>>
+
+    @Query("SELECT * FROM pastor_messages WHERE id = :id LIMIT 1")
+    fun getMessageById(id: Int): Flow<PastorMessageEntity?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMessage(message: PastorMessageEntity): Long
+
+    @Query("UPDATE pastor_messages SET pastorReply = :reply, responseStatus = :status, scriptureGuidance = :scripture WHERE id = :id")
+    suspend fun updateReply(id: Int, reply: String, status: String, scripture: String)
+
+    @Query("DELETE FROM pastor_messages WHERE id = :id")
+    suspend fun deleteMessage(id: Int)
 }
 
 @Dao

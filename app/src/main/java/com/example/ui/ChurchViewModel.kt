@@ -57,6 +57,14 @@ data class ChurchUiState(
     val isShowingPrayerModal: Boolean = false,
     val isShowingPastorContactModal: Boolean = false,
     val selectedPastorForContact: Pastor? = null,
+    // Pastor Directory & Guidance Messaging State
+    val pastorSearchQuery: String = "",
+    val selectedPastorSpecialtyFilter: String = "All Pastors",
+    val selectedPastorForProfile: Pastor? = null,
+    val isShowingPastorProfileModal: Boolean = false,
+    val isShowingGuidanceComposerModal: Boolean = false,
+    val prefillGuidancePrompt: String = "",
+    val prefillGuidanceCategory: String = "Spiritual Guidance & Discernment",
     // Settings, Themes & Notifications
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val accentTheme: AccentTheme = AccentTheme.GOLD_NAVY,
@@ -129,6 +137,55 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
                 _uiState.update { it.copy(favoriteDevotionIds = favs) }
             }
         }
+        viewModelScope.launch {
+            repository.allPastorMessages.collect { list ->
+                if (list.isEmpty()) {
+                    // Seed initial guidance exchanges
+                    seedInitialGuidanceMessages()
+                }
+            }
+        }
+    }
+
+    private suspend fun seedInitialGuidanceMessages() {
+        val pastorSarah = ChurchDataSeed.pastors.find { it.id == "pastor_sarah" } ?: ChurchDataSeed.pastors.first()
+        val pastorDavid = ChurchDataSeed.pastors.find { it.id == "pastor_david" } ?: ChurchDataSeed.pastors.first()
+
+        val id1 = repository.sendPastorMessage(
+            pastorId = pastorSarah.id,
+            pastorName = pastorSarah.name,
+            pastorTitle = pastorSarah.title,
+            senderName = "Brother Thomas",
+            senderEmail = "thomas@gracechurch.org",
+            messageType = "Spiritual Guidance & Discernment",
+            urgency = "Standard",
+            subject = "Seeking peace during career transition",
+            content = "Dear Pastor Sarah, I have been feeling deep anxiety about a new job offer that requires relocating our family. Could you share biblical guidance and pray with us as we seek God's direction?"
+        )
+        repository.providePastorReply(
+            messageId = id1.toInt(),
+            reply = "Dear brother Thomas, thank you for reaching out. Transition seasons are often where God grows our faith deepest. Remember that God does not ask you to figure out all ten steps ahead today—He only asks you to trust His hand for the step directly in front of you. Take quiet time with your family reading Psalm 32:8 this evening. I have placed your family on my daily prayer list, and our pastoral counseling doors are open if you'd like to schedule a dedicated session this week.",
+            scriptureGuidance = "I will instruct you and teach you in the way you should go; I will counsel you with my loving eye on you. — Psalm 32:8",
+            status = "Guidance Provided"
+        )
+
+        val id2 = repository.sendPastorMessage(
+            pastorId = pastorDavid.id,
+            pastorName = pastorDavid.name,
+            pastorTitle = pastorDavid.title,
+            senderName = "Sister Grace",
+            senderEmail = "grace@gracechurch.org",
+            messageType = "Biblical Counseling",
+            urgency = "Standard",
+            subject = "Encouraging a grieving friend with scripture",
+            content = "Pastor David, your sermon on Sunday about God's comfort really resonated with me. How can I best encourage a colleague walking through the sudden loss of a parent without sounding clichéd?"
+        )
+        repository.providePastorReply(
+            messageId = id2.toInt(),
+            reply = "Grace and peace to you, Sister Grace. It is a holy calling to weep with those who weep. Often, our gentle presence, a listening ear, and warm home-cooked meals communicate Christ's compassion far more than fast theological explanations. When the moment is right, share 2 Corinthians 1:3-4 and let them know our church family is holding them in prayer.",
+            scriptureGuidance = "Praise be to the God and Father of our Lord Jesus Christ, the Father of compassion and the God of all comfort, who comforts us in all our troubles. — 2 Corinthians 1:3-4",
+            status = "Guidance Provided"
+        )
     }
 
     private fun observeDevotionJournal(devotionId: String) {
@@ -417,12 +474,102 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
         _uiState.update { it.copy(isShowingPrayerModal = false) }
     }
 
+    fun setPastorSearchQuery(query: String) {
+        _uiState.update { it.copy(pastorSearchQuery = query) }
+    }
+
+    fun setPastorSpecialtyFilter(specialty: String) {
+        _uiState.update { it.copy(selectedPastorSpecialtyFilter = specialty) }
+    }
+
+    fun openPastorProfile(pastor: Pastor) {
+        _uiState.update { it.copy(isShowingPastorProfileModal = true, selectedPastorForProfile = pastor) }
+    }
+
+    fun closePastorProfile() {
+        _uiState.update { it.copy(isShowingPastorProfileModal = false, selectedPastorForProfile = null) }
+    }
+
+    fun openGuidanceComposer(pastor: Pastor? = null, starterPrompt: String? = null, category: String? = null) {
+        _uiState.update {
+            it.copy(
+                isShowingGuidanceComposerModal = true,
+                selectedPastorForContact = pastor ?: ChurchDataSeed.pastors.first(),
+                prefillGuidancePrompt = starterPrompt ?: "",
+                prefillGuidanceCategory = category ?: "Spiritual Guidance & Discernment"
+            )
+        }
+    }
+
+    fun closeGuidanceComposer() {
+        _uiState.update {
+            it.copy(
+                isShowingGuidanceComposerModal = false,
+                selectedPastorForContact = null,
+                prefillGuidancePrompt = ""
+            )
+        }
+    }
+
     fun openPastorContactModal(pastor: Pastor) {
-        _uiState.update { it.copy(isShowingPastorContactModal = true, selectedPastorForContact = pastor) }
+        openGuidanceComposer(pastor)
     }
 
     fun closePastorContactModal() {
-        _uiState.update { it.copy(isShowingPastorContactModal = false, selectedPastorForContact = null) }
+        closeGuidanceComposer()
+    }
+
+    fun sendGuidanceMessage(
+        context: Context,
+        pastor: Pastor,
+        senderName: String,
+        senderEmail: String,
+        category: String,
+        urgency: String,
+        subject: String,
+        content: String
+    ) {
+        viewModelScope.launch {
+            val messageId = repository.sendPastorMessage(
+                pastorId = pastor.id,
+                pastorName = pastor.name,
+                pastorTitle = pastor.title,
+                senderName = senderName,
+                senderEmail = senderEmail,
+                messageType = category,
+                urgency = urgency,
+                subject = if (subject.isNotBlank()) subject else "Guidance on $category",
+                content = content
+            )
+            _uiState.update {
+                it.copy(
+                    isShowingGuidanceComposerModal = false,
+                    isShowingPastorContactModal = false,
+                    selectedPastorForContact = null,
+                    prefillGuidancePrompt = ""
+                )
+            }
+            NotificationHelper.sendPastorResponseNotification(context, pastor.name, content.take(60))
+            showToast("Guidance request submitted to ${pastor.name}")
+
+            // Simulate authentic pastoral response & prayer commitment after a short moment
+            launch {
+                delay(2200)
+                val (pastoralReply, scripture) = generatePastoralGuidance(pastor, category, content)
+                repository.providePastorReply(
+                    messageId = messageId.toInt(),
+                    reply = pastoralReply,
+                    scriptureGuidance = scripture,
+                    status = "Guidance Provided"
+                )
+                NotificationHelper.sendPastorGuidanceRepliedNotification(
+                    context = context,
+                    pastorName = pastor.name,
+                    preview = pastoralReply.take(65),
+                    scripture = scripture
+                )
+            }
+        }
     }
 
     fun sendPastorMessage(
@@ -433,18 +580,77 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
         messageType: String,
         content: String
     ) {
+        sendGuidanceMessage(
+            context = context,
+            pastor = pastor,
+            senderName = senderName,
+            senderEmail = senderEmail,
+            category = messageType,
+            urgency = "Standard",
+            subject = "Pastoral Message",
+            content = content
+        )
+    }
+
+    fun replyToGuidanceThread(
+        context: Context,
+        thread: PastorMessageEntity,
+        followUpContent: String
+    ) {
         viewModelScope.launch {
-            repository.sendPastorMessage(
-                pastorId = pastor.id,
-                pastorName = pastor.name,
-                senderName = senderName,
-                senderEmail = senderEmail,
-                messageType = messageType,
-                content = content
+            val updatedContent = "${thread.content}\n\n[Follow-up question by ${thread.senderName}]:\n$followUpContent"
+            val pastor = ChurchDataSeed.pastors.find { it.id == thread.pastorId } ?: ChurchDataSeed.pastors.first()
+            val existingReply = thread.pastorReply
+
+            repository.providePastorReply(
+                messageId = thread.id,
+                reply = "$existingReply\n\n[${pastor.name} Follow-up Counsel]:\nThank you for following up. As you take this step, remember that the Lord is faithful to complete the good work He began in you. Keep fixing your eyes on Jesus!",
+                scriptureGuidance = thread.scriptureGuidance,
+                status = "In Active Dialogue"
             )
-            _uiState.update { it.copy(isShowingPastorContactModal = false, selectedPastorForContact = null) }
-            NotificationHelper.sendPastorResponseNotification(context, pastor.name, content.take(60))
-            showToast("Message sent directly to ${pastor.name}")
+            showToast("Follow-up sent to ${thread.pastorName}")
+        }
+    }
+
+    fun deleteGuidanceMessage(messageId: Int) {
+        viewModelScope.launch {
+            repository.deletePastorMessage(messageId)
+            showToast("Message thread removed")
+        }
+    }
+
+    private fun generatePastoralGuidance(pastor: Pastor, category: String, content: String): Pair<String, String> {
+        return when (pastor.id) {
+            "pastor_sarah" -> {
+                Pair(
+                    "Dear friend in Christ, thank you for reaching out with honesty. Walking through tender seasons or emotional stress requires us to release the burden of carrying tomorrow. I have brought your situation before the Lord in prayer today. Please know that God's grace is sufficient for right now. If you would like to set up a private counseling session in our Pastoral Care Center, let me know.",
+                    "The Lord is close to the brokenhearted and saves those who are crushed in spirit. — Psalm 34:18"
+                )
+            }
+            "pastor_david" -> {
+                Pair(
+                    "Grace and peace to you. In seeking biblical discernment, we are reminded that God's Word is a lamp unto our feet and a light unto our path. As you pray over this decision, continue to test all things against Scripture and seek godly wisdom from your church community. You are covered in our prayers.",
+                    "If any of you lacks wisdom, you should ask God, who gives generously to all without finding fault, and it will be given to you. — James 1:5"
+                )
+            }
+            "pastor_marcus" -> {
+                Pair(
+                    "Hey there! So grateful you reached out. Navigating life questions, faith tensions, or campus/work pressure is something no one should do alone. God has intentionally placed you where you are to shine His light. Let's connect this Sunday after service for a quick check-in!",
+                    "Don't let anyone look down on you because you are young, but set an example for the believers in speech, in conduct, in love, in faith and in purity. — 1 Timothy 4:12"
+                )
+            }
+            "pastor_elena" -> {
+                Pair(
+                    "Beloved, I am standing in intercession with you right now. In moments of uncertainty or spiritual longing, lifting our hearts in worship and quiet contemplative prayer brings profound peace. May the Holy Spirit fill your spirit with renewed joy and assurance.",
+                    "One thing I ask from the Lord, this only do I seek: that I may dwell in the house of the Lord all the days of my life, to gaze on the beauty of the Lord. — Psalm 27:4"
+                )
+            }
+            else -> {
+                Pair(
+                    "Greetings and blessings! Thank you for sharing your heart. God is actively at work in your life, refining your faith and opening doors for His kingdom. Our whole pastoral team is standing with you in prayer.",
+                    "He has shown you, O mortal, what is good. And what does the Lord require of you? To act justly and to love mercy and to walk humbly with your God. — Micah 6:8"
+                )
+            }
         }
     }
 

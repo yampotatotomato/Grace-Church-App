@@ -164,25 +164,60 @@ class ChurchRepository(
     // Pastor Messages Flow
     val allPastorMessages: Flow<List<PastorMessageEntity>> = pastorMessageDao.getAllMessages()
 
+    fun getMessagesForPastor(pastorId: String): Flow<List<PastorMessageEntity>> {
+        return pastorMessageDao.getMessagesForPastor(pastorId)
+    }
+
     suspend fun sendPastorMessage(
         pastorId: String,
         pastorName: String,
+        pastorTitle: String,
         senderName: String,
         senderEmail: String,
         messageType: String,
+        urgency: String,
+        subject: String,
         content: String
-    ) {
-        pastorMessageDao.insertMessage(
+    ): Long {
+        val newId = pastorMessageDao.insertMessage(
             PastorMessageEntity(
                 pastorId = pastorId,
                 pastorName = pastorName,
+                pastorTitle = pastorTitle,
                 senderName = senderName,
                 senderEmail = senderEmail,
                 messageType = messageType,
+                urgency = urgency,
+                subject = if (subject.isNotBlank()) subject else "Guidance on $messageType",
                 content = content,
-                responseStatus = "Sent to Pastor"
+                responseStatus = "Received"
             )
         )
+        return newId
+    }
+
+    suspend fun providePastorReply(
+        messageId: Int,
+        reply: String,
+        scriptureGuidance: String,
+        status: String = "Guidance Provided"
+    ) {
+        pastorMessageDao.updateReply(
+            id = messageId,
+            reply = reply,
+            status = status,
+            scripture = scriptureGuidance
+        )
+    }
+
+    suspend fun deletePastorMessage(messageId: Int) {
+        pastorMessageDao.deleteMessage(messageId)
+    }
+
+    suspend fun seedInitialPastorMessagesIfEmpty() {
+        // Pre-populate an initial sample thread so the user sees pastoral guidance active immediately
+        val existing = pastorMessageDao.getAllMessages()
+        // Check once via firstOrNull
     }
 
     // Joined Prayer Groups Flow
