@@ -110,9 +110,16 @@ fun ChurchApp(viewModel: ChurchViewModel) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        if (!uiState.isOnboardingCompleted) {
+        if (!uiState.isOnboardingCompleted || uiState.isOnboardingReviewOpen) {
             WelcomeCarouselScreen(
-                onGetStarted = { viewModel.completeOnboarding() }
+                viewModel = viewModel,
+                isReviewMode = uiState.isOnboardingReviewOpen,
+                onGetStarted = { targetTab ->
+                    viewModel.completeOnboarding(targetTab)
+                },
+                onDismissReview = {
+                    viewModel.closeOnboardingReview()
+                }
             )
         } else if (uiState.isNotificationSettingsOpen) {
             SettingsNotificationsScreen(

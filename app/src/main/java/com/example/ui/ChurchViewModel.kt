@@ -73,6 +73,7 @@ data class ChurchUiState(
     val dailyVerseTime: String = "07:00 AM",
     val meetingReminderEnabled: Boolean = true,
     val isNotificationSettingsOpen: Boolean = false,
+    val isOnboardingReviewOpen: Boolean = false,
     val userToastMessage: String? = null
 )
 
@@ -196,14 +197,28 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun completeOnboarding() {
+    fun completeOnboarding(openTabAfter: ChurchTab? = null) {
         prefs.edit().putBoolean("key_onboarding_completed", true).apply()
-        _uiState.update { it.copy(isOnboardingCompleted = true) }
+        _uiState.update {
+            it.copy(
+                isOnboardingCompleted = true,
+                isOnboardingReviewOpen = false,
+                selectedTab = openTabAfter ?: it.selectedTab
+            )
+        }
+    }
+
+    fun openOnboardingReview() {
+        _uiState.update { it.copy(isOnboardingReviewOpen = true) }
+    }
+
+    fun closeOnboardingReview() {
+        _uiState.update { it.copy(isOnboardingReviewOpen = false) }
     }
 
     fun resetToOnboarding() {
         prefs.edit().putBoolean("key_onboarding_completed", false).apply()
-        _uiState.update { it.copy(isOnboardingCompleted = false) }
+        _uiState.update { it.copy(isOnboardingCompleted = false, isOnboardingReviewOpen = false) }
     }
 
     fun selectTab(tab: ChurchTab) {
