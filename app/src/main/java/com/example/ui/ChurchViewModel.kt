@@ -23,7 +23,8 @@ enum class ChurchTab(val title: String, val testTag: String) {
     DEVOTION("Devotion", "tab_devotion"),
     JOURNAL("Journal", "tab_journal"),
     COMMUNITY("Community", "tab_community"),
-    SERMONS("Sermons", "tab_sermons")
+    SERMONS("Sermons", "tab_sermons"),
+    PROFILE("Profile", "tab_profile")
 }
 
 data class ChurchUiState(

@@ -71,6 +71,26 @@ fun DevotionScreen(
             title = "Daily Devotions",
             subtitle = "SPIRITUAL NOURISHMENT",
             actions = {
+                // Profile View Switcher
+                IconButton(
+                    onClick = { viewModel.selectTab(ChurchTab.PROFILE) },
+                    modifier = Modifier.testTag("devotion_open_profile_button")
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(RoyalNavy),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "EM",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ChurchGold
+                        )
+                    }
+                }
                 // Favorite Toggle for current devotion
                 IconButton(
                     onClick = { viewModel.toggleFavoriteDevotion(currentDevotion.id) },

@@ -40,6 +40,7 @@ import com.example.data.model.BibleBook
 import com.example.data.model.BibleChapter
 import com.example.data.model.BibleVerse
 import com.example.data.repository.ChurchDataSeed
+import com.example.ui.ChurchTab
 import com.example.ui.ChurchViewModel
 import com.example.ui.components.CupertinoIcons
 import com.example.ui.components.IosGroupedCard
@@ -191,6 +192,27 @@ fun ScriptureScreen(
             title = "Holy Scripture",
             subtitle = "BIBLE READER",
             actions = {
+                // Profile View Switcher
+                IconButton(
+                    onClick = { viewModel.selectTab(ChurchTab.PROFILE) },
+                    modifier = Modifier.testTag("scripture_open_profile_button")
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(RoyalNavy),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "EM",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ChurchGold
+                        )
+                    }
+                }
+
                 // Search toggle
                 IconButton(
                     onClick = { isSearchActive = !isSearchActive },

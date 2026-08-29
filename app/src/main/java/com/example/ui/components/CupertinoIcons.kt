@@ -39,6 +39,9 @@ object CupertinoIcons {
     val Person2: ImageVector = Icons.Outlined.Groups
     val Person2Fill: ImageVector = Icons.Filled.Groups
 
+    val Person: ImageVector = Icons.Outlined.Person
+    val PersonFill: ImageVector = Icons.Filled.Person
+
     // Journal & Notes
     val DocText: ImageVector = Icons.Outlined.Description
     val DocTextFill: ImageVector = Icons.Filled.Description

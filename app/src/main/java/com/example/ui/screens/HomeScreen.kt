@@ -60,6 +60,26 @@ fun HomeScreen(
             subtitle = "Daily Sanctuary",
             actions = {
                 IconButton(
+                    onClick = { onNavigateTab(ChurchTab.PROFILE) },
+                    modifier = Modifier.testTag("home_profile_button")
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(CircleShape)
+                            .background(RoyalNavy)
+                            .border(1.dp, uiState.accentTheme.accentColor, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "EM",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ChurchGold
+                        )
+                    }
+                }
+                IconButton(
                     onClick = { onNavigateTab(ChurchTab.JOURNAL) },
                     modifier = Modifier.testTag("home_journal_button")
                 ) {

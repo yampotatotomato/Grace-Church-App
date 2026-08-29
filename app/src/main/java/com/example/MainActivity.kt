@@ -55,6 +55,14 @@ class MainActivity : ComponentActivity() {
                 viewModel.completeOnboarding()
                 viewModel.selectTab(ChurchTab.SCRIPTURE)
             }
+            "devotional" -> {
+                viewModel.completeOnboarding()
+                viewModel.selectTab(ChurchTab.DEVOTION)
+            }
+            "profile" -> {
+                viewModel.completeOnboarding()
+                viewModel.selectTab(ChurchTab.PROFILE)
+            }
             "pastors" -> {
                 viewModel.completeOnboarding()
                 viewModel.selectTab(ChurchTab.SERMONS)
@@ -212,6 +220,13 @@ fun ChurchApp(viewModel: ChurchViewModel) {
                             ChurchTab.DEVOTION -> DevotionScreen(
                                 viewModel = viewModel
                             )
+                            ChurchTab.PROFILE -> ProfileScreen(
+                                viewModel = viewModel,
+                                onNavigateToScripture = { viewModel.selectTab(ChurchTab.SCRIPTURE) },
+                                onNavigateToDevotional = { viewModel.selectTab(ChurchTab.DEVOTION) },
+                                onNavigateToSettings = { viewModel.openNotificationSettings() },
+                                onNavigateTab = { viewModel.selectTab(it) }
+                            )
                             ChurchTab.JOURNAL -> JournalScreen(
                                 viewModel = viewModel
                             )
@@ -279,13 +294,6 @@ fun IosBottomNavigationBar(
                 testTag = "tab_devotion"
             )
             BottomNavItem(
-                title = "Journal",
-                icon = CupertinoIcons.SquareAndPencil,
-                isSelected = selectedTab == ChurchTab.JOURNAL,
-                onClick = { onTabSelected(ChurchTab.JOURNAL) },
-                testTag = "tab_journal"
-            )
-            BottomNavItem(
                 title = "Sermons",
                 icon = CupertinoIcons.Headphones,
                 isSelected = selectedTab == ChurchTab.SERMONS,
@@ -298,6 +306,13 @@ fun IosBottomNavigationBar(
                 isSelected = selectedTab == ChurchTab.COMMUNITY,
                 onClick = { onTabSelected(ChurchTab.COMMUNITY) },
                 testTag = "tab_community"
+            )
+            BottomNavItem(
+                title = "Profile",
+                icon = if (selectedTab == ChurchTab.PROFILE) CupertinoIcons.PersonFill else CupertinoIcons.Person,
+                isSelected = selectedTab == ChurchTab.PROFILE,
+                onClick = { onTabSelected(ChurchTab.PROFILE) },
+                testTag = "tab_profile"
             )
         }
     }
