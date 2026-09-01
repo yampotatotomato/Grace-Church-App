@@ -19,10 +19,17 @@ class ChurchRepository(
     val prayerDao = database.prayerDao()
     val pastorMessageDao = database.pastorMessageDao()
     val joinedGroupDao = database.joinedGroupDao()
+    val announcementDao = database.announcementDao()
 
     init {
-        // Seed initial prayer requests & a sample journal reflection if database is empty
+        // Seed initial prayer requests & a sample journal reflection & initial announcements if database is empty
         scope.launch {
+            val existingAnnouncements = announcementDao.getAllAnnouncements().firstOrNull()
+            if (existingAnnouncements.isNullOrEmpty()) {
+                ChurchDataSeed.initialAnnouncements.forEach {
+                    announcementDao.insertAnnouncement(it)
+                }
+            }
             val existing = prayerDao.getAllPrayerRequests().firstOrNull()
             if (existing.isNullOrEmpty()) {
                 ChurchDataSeed.initialPrayerRequests.forEach {
@@ -229,6 +236,39 @@ class ChurchRepository(
         } else {
             joinedGroupDao.joinGroup(JoinedGroupEntity(groupId = groupId))
         }
+    }
+
+    // Announcements Flow & Operations
+    val allAnnouncements: Flow<List<AnnouncementEntity>> = announcementDao.getAllAnnouncements()
+
+    fun getPublishedAnnouncements(currentTime: Long = System.currentTimeMillis()): Flow<List<AnnouncementEntity>> {
+        return announcementDao.getPublishedAnnouncements(currentTime)
+    }
+
+    val scheduledAnnouncements: Flow<List<AnnouncementEntity>> = announcementDao.getScheduledAnnouncements()
+
+    fun getAnnouncementById(id: Int): Flow<AnnouncementEntity?> {
+        return announcementDao.getAnnouncementById(id)
+    }
+
+    suspend fun createAnnouncement(announcement: AnnouncementEntity): Long {
+        return announcementDao.insertAnnouncement(announcement)
+    }
+
+    suspend fun updateAnnouncement(announcement: AnnouncementEntity) {
+        announcementDao.updateAnnouncement(announcement)
+    }
+
+    suspend fun deleteAnnouncement(id: Int) {
+        announcementDao.deleteAnnouncement(id)
+    }
+
+    suspend fun publishScheduledNow(id: Int) {
+        announcementDao.updateStatus(id, "Published")
+    }
+
+    suspend fun markAnnouncementNotificationSent(id: Int) {
+        announcementDao.markNotificationSent(id)
     }
 
     companion object {

@@ -27,6 +27,7 @@ sealed class ChurchScreen(val route: String, val tab: ChurchTab?) {
     object Journal : ChurchScreen("screen_journal", ChurchTab.JOURNAL)
     object Sermons : ChurchScreen("screen_sermons", ChurchTab.SERMONS)
     object Community : ChurchScreen("screen_community", ChurchTab.COMMUNITY)
+    object CompanionPortal : ChurchScreen("screen_companion", ChurchTab.COMPANION)
     object Settings : ChurchScreen("screen_settings", null)
 
     companion object {
@@ -39,6 +40,7 @@ sealed class ChurchScreen(val route: String, val tab: ChurchTab?) {
                 ChurchTab.JOURNAL -> Journal
                 ChurchTab.SERMONS -> Sermons
                 ChurchTab.COMMUNITY -> Community
+                ChurchTab.COMPANION -> CompanionPortal
             }
         }
 
@@ -51,6 +53,7 @@ sealed class ChurchScreen(val route: String, val tab: ChurchTab?) {
                 Journal.route -> Journal
                 Sermons.route -> Sermons
                 Community.route -> Community
+                CompanionPortal.route -> CompanionPortal
                 Settings.route -> Settings
                 else -> Home
             }
@@ -126,6 +129,15 @@ fun ChurchNavHost(
         composable(ChurchScreen.Community.route) {
             PrayerGroupsScreen(
                 viewModel = viewModel
+            )
+        }
+
+        composable(ChurchScreen.CompanionPortal.route) {
+            CompanionScreen(
+                viewModel = viewModel,
+                onNavigateTab = { targetTab ->
+                    navController.navigateToTab(targetTab)
+                }
             )
         }
 

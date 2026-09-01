@@ -70,3 +70,27 @@ data class JoinedGroupEntity(
     @PrimaryKey val groupId: String,
     val joinedTimestamp: Long = System.currentTimeMillis()
 )
+
+@Entity(tableName = "announcements")
+data class AnnouncementEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val title: String,
+    val content: String,
+    val authorPastorName: String,
+    val authorRole: String = "Pastoral Office",
+    val category: String = "Pastoral Letter", // "Urgent Announcement", "Pastoral Letter", "Sermon Study Notes", "Event & Gathering", "Prayer Bulletin", "Ministry Update"
+    val scriptureRef: String = "",
+    val actionButtonText: String = "",
+    val actionButtonLink: String = "",
+    val isPinned: Boolean = false,
+    val isScheduled: Boolean = false,
+    val scheduledTimestamp: Long = 0L,
+    val scheduledDateFormatted: String = "",
+    val status: String = "Published", // "Published", "Scheduled", "Draft", "Archived"
+    val sendPushNotification: Boolean = true,
+    val notificationSent: Boolean = false,
+    val notificationTitle: String = "",
+    val notificationBody: String = "",
+    val priorityLevel: String = "High", // "Urgent", "High", "Standard"
+    val timestamp: Long = System.currentTimeMillis()
+)

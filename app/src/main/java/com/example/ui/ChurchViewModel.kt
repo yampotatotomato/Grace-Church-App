@@ -24,7 +24,15 @@ enum class ChurchTab(val title: String, val testTag: String) {
     JOURNAL("Journal", "tab_journal"),
     COMMUNITY("Community", "tab_community"),
     SERMONS("Sermons", "tab_sermons"),
+    COMPANION("Companion", "tab_companion"),
     PROFILE("Profile", "tab_profile")
+}
+
+enum class CompanionPortalTab(val title: String) {
+    ALL_POSTS("All Bulletins"),
+    PUBLISHED("Live Feeds"),
+    SCHEDULED("Scheduled Alerts"),
+    NEW_POST("Post Composer")
 }
 
 data class ChurchUiState(
@@ -66,6 +74,35 @@ data class ChurchUiState(
     val isShowingGuidanceComposerModal: Boolean = false,
     val prefillGuidancePrompt: String = "",
     val prefillGuidanceCategory: String = "Spiritual Guidance & Discernment",
+    // Companion Pastor & Staff Section State
+    val isPastorLoggedIn: Boolean = false,
+    val currentPastorUser: CompanionStaffUser? = null,
+    val companionPortalTab: CompanionPortalTab = CompanionPortalTab.ALL_POSTS,
+    val selectedAnnouncementForDetail: AnnouncementEntity? = null,
+    val editingAnnouncement: AnnouncementEntity? = null,
+    val isShowingComposerModal: Boolean = false,
+    // Companion Login Form
+    val companionLoginEmail: String = "pastor.david@gracechurch.org",
+    val companionLoginPassword: String = "grace2026",
+    val companionLoginError: String? = null,
+    val companionIsLoggingIn: Boolean = false,
+    // Companion Composer Form Fields
+    val composerTitle: String = "",
+    val composerContent: String = "",
+    val composerCategory: String = "Pastoral Letter",
+    val composerAuthorName: String = "Dr. David Sterling",
+    val composerAuthorRole: String = "Senior Pastor",
+    val composerScriptureRef: String = "Romans 8:28",
+    val composerActionButtonText: String = "Read Scripture Focus",
+    val composerActionButtonLink: String = "scripture:Romans:8",
+    val composerIsPinned: Boolean = false,
+    val composerIsScheduled: Boolean = false,
+    val composerScheduledDateFormatted: String = "Tomorrow at 7:00 AM",
+    val composerScheduledOffsetHours: Int = 24,
+    val composerSendPushNotification: Boolean = true,
+    val composerNotificationTitle: String = "",
+    val composerNotificationBody: String = "",
+    val composerPriorityLevel: String = "High",
     // Settings, Themes & Notifications
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val accentTheme: AccentTheme = AccentTheme.GOLD_NAVY,
@@ -127,6 +164,15 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val favoriteDevotionIds: StateFlow<List<String>> = repository.favoriteDevotionIds
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allAnnouncements: StateFlow<List<AnnouncementEntity>> = repository.allAnnouncements
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val publishedAnnouncements: StateFlow<List<AnnouncementEntity>> = repository.getPublishedAnnouncements()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val scheduledAnnouncements: StateFlow<List<AnnouncementEntity>> = repository.scheduledAnnouncements
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private var audioPlaybackJob: Job? = null
@@ -722,6 +768,365 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
 
     fun closeNotificationSettings() {
         _uiState.update { it.copy(isNotificationSettingsOpen = false) }
+    }
+
+    // Companion Pastor & Staff Section Handlers
+    fun setCompanionPortalTab(tab: CompanionPortalTab) {
+        _uiState.update { it.copy(companionPortalTab = tab) }
+    }
+
+    fun updateCompanionLoginForm(email: String, pass: String) {
+        _uiState.update {
+            it.copy(
+                companionLoginEmail = email,
+                companionLoginPassword = pass,
+                companionLoginError = null
+            )
+        }
+    }
+
+    fun quickLoginAs(staffUser: CompanionStaffUser) {
+        _uiState.update {
+            it.copy(
+                companionLoginEmail = staffUser.email,
+                companionLoginPassword = "grace2026",
+                isPastorLoggedIn = true,
+                currentPastorUser = staffUser,
+                companionLoginError = null,
+                composerAuthorName = staffUser.name,
+                composerAuthorRole = staffUser.role,
+                composerCategory = staffUser.defaultCategory
+            )
+        }
+        showToast("Logged in as ${staffUser.name} (${staffUser.role})")
+    }
+
+    fun loginCompanionStaff() {
+        val email = _uiState.value.companionLoginEmail.trim()
+        val pass = _uiState.value.companionLoginPassword.trim()
+
+        if (email.isBlank()) {
+            _uiState.update { it.copy(companionLoginError = "Please enter your church staff email address.") }
+            return
+        }
+        if (pass.isBlank()) {
+            _uiState.update { it.copy(companionLoginError = "Please enter your portal security password.") }
+            return
+        }
+
+        val foundStaff = ChurchDataSeed.staffUsers.find {
+            it.email.equals(email, ignoreCase = true)
+        } ?: ChurchDataSeed.staffUsers.first()
+
+        _uiState.update {
+            it.copy(
+                companionIsLoggingIn = false,
+                isPastorLoggedIn = true,
+                currentPastorUser = foundStaff,
+                companionLoginError = null,
+                composerAuthorName = foundStaff.name,
+                composerAuthorRole = foundStaff.role,
+                composerCategory = foundStaff.defaultCategory
+            )
+        }
+        showToast("Welcome back, ${foundStaff.name}!")
+    }
+
+    fun logoutCompanionStaff() {
+        _uiState.update {
+            it.copy(
+                isPastorLoggedIn = false,
+                currentPastorUser = null,
+                companionPortalTab = CompanionPortalTab.ALL_POSTS
+            )
+        }
+        showToast("Logged out of Pastor Companion Portal.")
+    }
+
+    fun openAnnouncementDetail(announcement: AnnouncementEntity) {
+        _uiState.update { it.copy(selectedAnnouncementForDetail = announcement) }
+    }
+
+    fun closeAnnouncementDetail() {
+        _uiState.update { it.copy(selectedAnnouncementForDetail = null) }
+    }
+
+    fun openNewAnnouncementComposer(presetCategory: String? = null) {
+        val user = _uiState.value.currentPastorUser ?: ChurchDataSeed.staffUsers.first()
+        _uiState.update {
+            it.copy(
+                editingAnnouncement = null,
+                isShowingComposerModal = true,
+                composerTitle = "",
+                composerContent = "",
+                composerCategory = presetCategory ?: user.defaultCategory,
+                composerAuthorName = user.name,
+                composerAuthorRole = user.role,
+                composerScriptureRef = "",
+                composerActionButtonText = "Read More",
+                composerActionButtonLink = "",
+                composerIsPinned = false,
+                composerIsScheduled = false,
+                composerScheduledDateFormatted = "Tomorrow at 7:00 AM",
+                composerScheduledOffsetHours = 24,
+                composerSendPushNotification = true,
+                composerNotificationTitle = "",
+                composerNotificationBody = "",
+                composerPriorityLevel = "High"
+            )
+        }
+    }
+
+    fun openEditAnnouncementComposer(announcement: AnnouncementEntity) {
+        _uiState.update {
+            it.copy(
+                editingAnnouncement = announcement,
+                isShowingComposerModal = true,
+                composerTitle = announcement.title,
+                composerContent = announcement.content,
+                composerCategory = announcement.category,
+                composerAuthorName = announcement.authorPastorName,
+                composerAuthorRole = announcement.authorRole,
+                composerScriptureRef = announcement.scriptureRef,
+                composerActionButtonText = announcement.actionButtonText,
+                composerActionButtonLink = announcement.actionButtonLink,
+                composerIsPinned = announcement.isPinned,
+                composerIsScheduled = announcement.isScheduled,
+                composerScheduledDateFormatted = if (announcement.scheduledDateFormatted.isNotBlank()) announcement.scheduledDateFormatted else "Tomorrow at 7:00 AM",
+                composerScheduledOffsetHours = 24,
+                composerSendPushNotification = announcement.sendPushNotification,
+                composerNotificationTitle = announcement.notificationTitle,
+                composerNotificationBody = announcement.notificationBody,
+                composerPriorityLevel = announcement.priorityLevel
+            )
+        }
+    }
+
+    fun closeAnnouncementComposer() {
+        _uiState.update {
+            it.copy(
+                isShowingComposerModal = false,
+                editingAnnouncement = null
+            )
+        }
+    }
+
+    fun updateComposerTitle(value: String) {
+        _uiState.update { it.copy(composerTitle = value) }
+    }
+
+    fun updateComposerContent(value: String) {
+        _uiState.update { it.copy(composerContent = value) }
+    }
+
+    fun updateComposerCategory(value: String) {
+        _uiState.update { it.copy(composerCategory = value) }
+    }
+
+    fun updateComposerAuthor(staffUser: CompanionStaffUser) {
+        _uiState.update {
+            it.copy(
+                composerAuthorName = staffUser.name,
+                composerAuthorRole = staffUser.role
+            )
+        }
+    }
+
+    fun updateComposerScripture(value: String) {
+        _uiState.update { it.copy(composerScriptureRef = value) }
+    }
+
+    fun updateComposerAction(text: String, link: String) {
+        _uiState.update {
+            it.copy(
+                composerActionButtonText = text,
+                composerActionButtonLink = link
+            )
+        }
+    }
+
+    fun toggleComposerPinned(isPinned: Boolean) {
+        _uiState.update { it.copy(composerIsPinned = isPinned) }
+    }
+
+    fun toggleComposerScheduled(isScheduled: Boolean) {
+        _uiState.update { it.copy(composerIsScheduled = isScheduled) }
+    }
+
+    fun setComposerScheduledPreset(offsetHours: Int, formattedDate: String) {
+        _uiState.update {
+            it.copy(
+                composerScheduledOffsetHours = offsetHours,
+                composerScheduledDateFormatted = formattedDate,
+                composerIsScheduled = true
+            )
+        }
+    }
+
+    fun toggleComposerSendPush(send: Boolean) {
+        _uiState.update { it.copy(composerSendPushNotification = send) }
+    }
+
+    fun updateComposerPriority(priority: String) {
+        _uiState.update { it.copy(composerPriorityLevel = priority) }
+    }
+
+    fun saveAnnouncementPost(context: Context) {
+        val state = _uiState.value
+        val title = state.composerTitle.trim()
+        val content = state.composerContent.trim()
+
+        if (title.isBlank()) {
+            showToast("Please enter an announcement title.")
+            return
+        }
+        if (content.isBlank()) {
+            showToast("Please write the body content or pastoral message.")
+            return
+        }
+
+        val isScheduled = state.composerIsScheduled
+        val scheduledTs = if (isScheduled) {
+            System.currentTimeMillis() + (state.composerScheduledOffsetHours * 3600000L)
+        } else 0L
+
+        val status = if (isScheduled) "Scheduled" else "Published"
+        val editing = state.editingAnnouncement
+
+        val notifTitle = if (state.composerNotificationTitle.isNotBlank()) state.composerNotificationTitle else title
+        val notifBody = if (state.composerNotificationBody.isNotBlank()) state.composerNotificationBody else {
+            if (content.length > 90) content.take(87) + "..." else content
+        }
+
+        viewModelScope.launch {
+            if (editing != null) {
+                val updated = editing.copy(
+                    title = title,
+                    content = content,
+                    authorPastorName = state.composerAuthorName,
+                    authorRole = state.composerAuthorRole,
+                    category = state.composerCategory,
+                    scriptureRef = state.composerScriptureRef,
+                    actionButtonText = state.composerActionButtonText,
+                    actionButtonLink = state.composerActionButtonLink,
+                    isPinned = state.composerIsPinned,
+                    isScheduled = isScheduled,
+                    scheduledTimestamp = scheduledTs,
+                    scheduledDateFormatted = if (isScheduled) state.composerScheduledDateFormatted else "Published Live",
+                    status = status,
+                    sendPushNotification = state.composerSendPushNotification,
+                    notificationTitle = notifTitle,
+                    notificationBody = notifBody,
+                    priorityLevel = state.composerPriorityLevel
+                )
+                repository.updateAnnouncement(updated)
+                showToast("Post updated successfully!")
+            } else {
+                val newEntity = AnnouncementEntity(
+                    title = title,
+                    content = content,
+                    authorPastorName = state.composerAuthorName,
+                    authorRole = state.composerAuthorRole,
+                    category = state.composerCategory,
+                    scriptureRef = state.composerScriptureRef,
+                    actionButtonText = state.composerActionButtonText,
+                    actionButtonLink = state.composerActionButtonLink,
+                    isPinned = state.composerIsPinned,
+                    isScheduled = isScheduled,
+                    scheduledTimestamp = scheduledTs,
+                    scheduledDateFormatted = if (isScheduled) state.composerScheduledDateFormatted else "Published Live",
+                    status = status,
+                    sendPushNotification = state.composerSendPushNotification,
+                    notificationSent = !isScheduled && state.composerSendPushNotification,
+                    notificationTitle = notifTitle,
+                    notificationBody = notifBody,
+                    priorityLevel = state.composerPriorityLevel,
+                    timestamp = System.currentTimeMillis()
+                )
+                val newId = repository.createAnnouncement(newEntity).toInt()
+
+                // Trigger push notification if live and enabled
+                if (!isScheduled && state.composerSendPushNotification) {
+                    NotificationHelper.sendAnnouncementNotification(
+                        context = context,
+                        title = notifTitle,
+                        body = notifBody,
+                        author = state.composerAuthorName,
+                        category = state.composerCategory,
+                        announcementId = newId
+                    )
+                }
+
+                if (isScheduled) {
+                    showToast("Announcement scheduled for ${state.composerScheduledDateFormatted}!")
+                } else {
+                    showToast("Announcement published live to congregation!")
+                }
+            }
+
+            _uiState.update {
+                it.copy(
+                    isShowingComposerModal = false,
+                    editingAnnouncement = null,
+                    companionPortalTab = if (isScheduled) CompanionPortalTab.SCHEDULED else CompanionPortalTab.ALL_POSTS
+                )
+            }
+        }
+    }
+
+    fun deleteAnnouncementPost(id: Int) {
+        viewModelScope.launch {
+            repository.deleteAnnouncement(id)
+            showToast("Announcement removed.")
+            if (_uiState.value.selectedAnnouncementForDetail?.id == id) {
+                _uiState.update { it.copy(selectedAnnouncementForDetail = null) }
+            }
+        }
+    }
+
+    fun publishScheduledPostNow(announcement: AnnouncementEntity, context: Context) {
+        viewModelScope.launch {
+            repository.publishScheduledNow(announcement.id)
+            if (announcement.sendPushNotification && !announcement.notificationSent) {
+                NotificationHelper.sendAnnouncementNotification(
+                    context = context,
+                    title = announcement.notificationTitle.ifBlank { announcement.title },
+                    body = announcement.notificationBody.ifBlank { announcement.content.take(80) },
+                    author = announcement.authorPastorName,
+                    category = announcement.category,
+                    announcementId = announcement.id
+                )
+                repository.markAnnouncementNotificationSent(announcement.id)
+            }
+            showToast("Published \"${announcement.title}\" live now!")
+        }
+    }
+
+    fun triggerAnnouncementPushNow(announcement: AnnouncementEntity, context: Context) {
+        NotificationHelper.sendAnnouncementNotification(
+            context = context,
+            title = announcement.notificationTitle.ifBlank { announcement.title },
+            body = announcement.notificationBody.ifBlank { announcement.content.take(80) },
+            author = announcement.authorPastorName,
+            category = announcement.category,
+            announcementId = announcement.id
+        )
+        viewModelScope.launch {
+            repository.markAnnouncementNotificationSent(announcement.id)
+        }
+        showToast("Push notification alert sent to congregation!")
+    }
+
+    fun triggerTestAnnouncementPush(context: Context) {
+        NotificationHelper.sendAnnouncementNotification(
+            context = context,
+            title = "📢 Test Pastoral Announcement Alert",
+            body = "Grace Church sanctuary update: All evening Bible studies will begin at 7:00 PM.",
+            author = "Dr. David Sterling",
+            category = "Pastoral Letter",
+            announcementId = 999
+        )
+        showToast("Test announcement push alert sent!")
     }
 
     fun showToast(message: String) {

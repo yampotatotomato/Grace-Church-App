@@ -1,5 +1,6 @@
 package com.example.data.repository
 
+import com.example.data.local.AnnouncementEntity
 import com.example.data.local.PrayerRequestEntity
 import com.example.data.model.*
 
@@ -707,6 +708,140 @@ object ChurchDataSeed {
             details = "Pray for our university Christian fellowship as we prepare for welcome week. May many students find hope and community in Christ.",
             prayerCount = 27,
             timestamp = System.currentTimeMillis() - 3600000 * 36
+        )
+    )
+
+    val staffUsers = listOf(
+        CompanionStaffUser(
+            id = "staff_david",
+            name = "Dr. David Sterling",
+            email = "pastor.david@gracechurch.org",
+            role = "Senior Pastor",
+            title = "Senior Pastor & Head of Ministry",
+            avatarInitials = "DS",
+            accessLevel = "Full Pastoral Authority",
+            defaultCategory = "Pastoral Letter"
+        ),
+        CompanionStaffUser(
+            id = "staff_sarah",
+            name = "Pastor Sarah Jenkins",
+            email = "sarah.jenkins@gracechurch.org",
+            role = "Pastoral Care Director",
+            title = "Executive & Pastoral Care Pastor",
+            avatarInitials = "SJ",
+            accessLevel = "Pastoral & Counseling Admin",
+            defaultCategory = "Prayer Bulletin"
+        ),
+        CompanionStaffUser(
+            id = "staff_marcus",
+            name = "Pastor Marcus Hayes",
+            email = "marcus.hayes@gracechurch.org",
+            role = "Youth & Young Adults Pastor",
+            title = "Next Gen Ministry Leader",
+            avatarInitials = "MH",
+            accessLevel = "Ministry Publishing & Alerts",
+            defaultCategory = "Event & Gathering"
+        ),
+        CompanionStaffUser(
+            id = "staff_admin",
+            name = "Media & Communications Office",
+            email = "admin@gracechurch.org",
+            role = "Communications Admin",
+            title = "Media Director & Church Administrator",
+            avatarInitials = "GC",
+            accessLevel = "Master Broadcast & Scheduling",
+            defaultCategory = "Urgent Announcement"
+        )
+    )
+
+    val initialAnnouncements = listOf(
+        AnnouncementEntity(
+            id = 1,
+            title = "Pastoral Letter: Walking in Steadfast Hope",
+            content = "Dear Grace Church family, as we step into this new season, my heart is deeply stirred by Paul's exhortation in Romans 15:13. Whatever burdens or uncertainties you carry this week, know that Christ remains our unshakeable anchor. Our pastoral team is praying over every household daily.",
+            authorPastorName = "Dr. David Sterling",
+            authorRole = "Senior Pastor",
+            category = "Pastoral Letter",
+            scriptureRef = "Romans 15:13",
+            actionButtonText = "Read Scripture Focus",
+            actionButtonLink = "scripture:Romans:15",
+            isPinned = true,
+            isScheduled = false,
+            scheduledTimestamp = 0L,
+            scheduledDateFormatted = "Published Live",
+            status = "Published",
+            sendPushNotification = true,
+            notificationSent = true,
+            notificationTitle = "Pastoral Letter from Dr. David Sterling",
+            notificationBody = "\"May the God of hope fill you with all joy and peace as you trust in Him.\"",
+            priorityLevel = "Urgent",
+            timestamp = System.currentTimeMillis() - 1000 * 60 * 60 * 2 // 2 hours ago
+        ),
+        AnnouncementEntity(
+            id = 2,
+            title = "Sunday Sanctuary Worship & Holy Communion",
+            content = "Join us this Sunday across all sanctuary services (8:30 AM & 10:30 AM) as we celebrate Holy Communion and welcome guest speaker Dr. Arthur Vance for our 'Anchored in Truth' series. Childcare and Youth Fellowship are available during both services.",
+            authorPastorName = "Pastor Sarah Jenkins",
+            authorRole = "Pastoral Care Director",
+            category = "Event & Gathering",
+            scriptureRef = "1 Corinthians 11:24-26",
+            actionButtonText = "View Sunday Guide",
+            actionButtonLink = "worship_guide",
+            isPinned = true,
+            isScheduled = false,
+            scheduledTimestamp = 0L,
+            scheduledDateFormatted = "Published Live",
+            status = "Published",
+            sendPushNotification = true,
+            notificationSent = true,
+            notificationTitle = "Sunday Worship & Holy Communion",
+            notificationBody = "Join us this Sunday at 8:30 AM & 10:30 AM in the Main Sanctuary.",
+            priorityLevel = "High",
+            timestamp = System.currentTimeMillis() - 1000 * 60 * 60 * 8 // 8 hours ago
+        ),
+        AnnouncementEntity(
+            id = 3,
+            title = "Midweek Community Prayer Vigil & Intercession",
+            content = "We invite all members, families, and prayer teams to gather Wednesday at 7:00 PM in the Chapel of Grace for an evening of unified intercession, worship, and laying on of hands for healing and breakthroughs.",
+            authorPastorName = "Pastor Elena Vance",
+            authorRole = "Worship & Prayer Pastor",
+            category = "Prayer Bulletin",
+            scriptureRef = "2 Chronicles 7:14",
+            actionButtonText = "Join Prayer Chain",
+            actionButtonLink = "community_prayer",
+            isPinned = false,
+            isScheduled = false,
+            scheduledTimestamp = 0L,
+            scheduledDateFormatted = "Published Live",
+            status = "Published",
+            sendPushNotification = false,
+            notificationSent = false,
+            notificationTitle = "Wednesday Prayer Vigil",
+            notificationBody = "Gather with us Wednesday at 7:00 PM for prayer and worship.",
+            priorityLevel = "Standard",
+            timestamp = System.currentTimeMillis() - 1000 * 60 * 60 * 22 // 22 hours ago
+        ),
+        AnnouncementEntity(
+            id = 4,
+            title = "Youth Winter Retreat 2026 Registration",
+            content = "Early bird registration is officially open for our annual Youth & Young Adult Winter Retreat at Pinecrest Summit! Featuring guest worship leaders, outdoor campfires, and powerful biblical workshops. Spots are limited, reserve your spot today.",
+            authorPastorName = "Pastor Marcus Hayes",
+            authorRole = "Youth Pastor",
+            category = "Ministry Update",
+            scriptureRef = "1 Timothy 4:12",
+            actionButtonText = "View Details",
+            actionButtonLink = "youth_retreat",
+            isPinned = false,
+            isScheduled = true,
+            scheduledTimestamp = System.currentTimeMillis() + 1000 * 60 * 60 * 36, // in 36 hours
+            scheduledDateFormatted = "Tomorrow at 7:00 AM",
+            status = "Scheduled",
+            sendPushNotification = true,
+            notificationSent = false,
+            notificationTitle = "Youth Winter Retreat Registration Alert",
+            notificationBody = "Early registration for Pinecrest Summit is now open! Reserve your spot.",
+            priorityLevel = "High",
+            timestamp = System.currentTimeMillis() + 1000 * 60 * 60 * 36
         )
     )
 }

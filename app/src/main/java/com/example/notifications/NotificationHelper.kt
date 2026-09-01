@@ -18,10 +18,12 @@ object NotificationHelper {
     const val CHANNEL_DAILY_VERSE = "channel_daily_verse"
     const val CHANNEL_MEETINGS = "channel_meetings"
     const val CHANNEL_COMMUNITY = "channel_community"
+    const val CHANNEL_ANNOUNCEMENTS = "channel_announcements"
 
     const val NOTIF_ID_VERSE = 1001
     const val NOTIF_ID_MEETING = 1002
     const val NOTIF_ID_COMMUNITY = 1003
+    const val NOTIF_ID_ANNOUNCEMENT_BASE = 2000
 
     fun createNotificationChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -53,9 +55,19 @@ object NotificationHelper {
                 description = "Pastoral message confirmations and community prayer updates"
             }
 
+            val announcementChannel = NotificationChannel(
+                CHANNEL_ANNOUNCEMENTS,
+                "Church Announcements & Pastoral Alerts",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Urgent church announcements, pastoral letters, and scheduled ministry updates"
+                enableVibration(true)
+            }
+
             manager.createNotificationChannel(verseChannel)
             manager.createNotificationChannel(meetingChannel)
             manager.createNotificationChannel(communityChannel)
+            manager.createNotificationChannel(announcementChannel)
         }
     }
 
@@ -185,6 +197,51 @@ object NotificationHelper {
 
         try {
             NotificationManagerCompat.from(context).notify(NOTIF_ID_COMMUNITY, notification)
+        } catch (e: SecurityException) {
+            // Permission handling
+        }
+    }
+
+    fun sendAnnouncementNotification(
+        context: Context,
+        title: String,
+        body: String,
+        author: String,
+        category: String,
+        announcementId: Int
+    ) {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("EXTRA_NAV_TARGET", "announcements")
+            putExtra("EXTRA_ANNOUNCEMENT_ID", announcementId)
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            NOTIF_ID_ANNOUNCEMENT_BASE + announcementId,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
+
+        val displayTitle = if (title.isNotBlank()) title else "Pastoral Announcement"
+        val notification = NotificationCompat.Builder(context, CHANNEL_ANNOUNCEMENTS)
+            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setContentTitle("📢 $displayTitle")
+            .setContentText(body)
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText("$body\n\n— $author ($category)")
+                    .setSummaryText("Grace Church Announcement")
+            )
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        try {
+            NotificationManagerCompat.from(context).notify(
+                NOTIF_ID_ANNOUNCEMENT_BASE + (announcementId % 1000),
+                notification
+            )
         } catch (e: SecurityException) {
             // Permission handling
         }

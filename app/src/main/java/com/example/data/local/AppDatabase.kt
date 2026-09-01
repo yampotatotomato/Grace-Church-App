@@ -12,9 +12,10 @@ import androidx.room.RoomDatabase
         FavoriteDevotionEntity::class,
         PrayerRequestEntity::class,
         PastorMessageEntity::class,
-        JoinedGroupEntity::class
+        JoinedGroupEntity::class,
+        AnnouncementEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,6 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun prayerDao(): PrayerDao
     abstract fun pastorMessageDao(): PastorMessageDao
     abstract fun joinedGroupDao(): JoinedGroupDao
+    abstract fun announcementDao(): AnnouncementDao
 
     companion object {
         @Volatile

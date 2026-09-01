@@ -67,6 +67,14 @@ class MainActivity : ComponentActivity() {
                 viewModel.completeOnboarding()
                 viewModel.selectTab(ChurchTab.SERMONS)
             }
+            "companion" -> {
+                viewModel.completeOnboarding()
+                viewModel.selectTab(ChurchTab.COMPANION)
+            }
+            "announcements" -> {
+                viewModel.completeOnboarding()
+                viewModel.selectTab(ChurchTab.HOME)
+            }
             "prayer_groups" -> {
                 viewModel.completeOnboarding()
                 viewModel.selectTab(ChurchTab.COMMUNITY)
@@ -236,6 +244,10 @@ fun ChurchApp(viewModel: ChurchViewModel) {
                             ChurchTab.COMMUNITY -> PrayerGroupsScreen(
                                 viewModel = viewModel
                             )
+                            ChurchTab.COMPANION -> CompanionScreen(
+                                viewModel = viewModel,
+                                onNavigateTab = { viewModel.selectTab(it) }
+                            )
                         }
                     }
                 }
@@ -268,8 +280,8 @@ fun IosBottomNavigationBar(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .height(64.dp)
-                .padding(horizontal = 4.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
+                .padding(horizontal = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             BottomNavItem(
@@ -306,6 +318,13 @@ fun IosBottomNavigationBar(
                 isSelected = selectedTab == ChurchTab.COMMUNITY,
                 onClick = { onTabSelected(ChurchTab.COMMUNITY) },
                 testTag = "tab_community"
+            )
+            BottomNavItem(
+                title = "Companion",
+                icon = if (selectedTab == ChurchTab.COMPANION) CupertinoIcons.Megaphone else CupertinoIcons.Sparkles,
+                isSelected = selectedTab == ChurchTab.COMPANION,
+                onClick = { onTabSelected(ChurchTab.COMPANION) },
+                testTag = "tab_companion"
             )
             BottomNavItem(
                 title = "Profile",
@@ -348,10 +367,10 @@ fun BottomNavItem(
 
     Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(pillBgColor)
             .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .padding(horizontal = 5.dp, vertical = 4.dp)
             .testTag(testTag),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -361,7 +380,7 @@ fun BottomNavItem(
             contentDescription = title,
             tint = tint,
             modifier = Modifier
-                .size(22.dp)
+                .size(20.dp)
                 .scale(iconScale)
         )
         Spacer(modifier = Modifier.height(2.dp))
@@ -370,7 +389,7 @@ fun BottomNavItem(
             style = MaterialTheme.typography.labelSmall,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             color = tint,
-            fontSize = 10.sp,
+            fontSize = 9.5.sp,
             maxLines = 1
         )
     }

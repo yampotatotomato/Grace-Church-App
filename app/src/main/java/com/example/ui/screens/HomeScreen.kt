@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -45,6 +46,7 @@ fun HomeScreen(
     val favoriteDevotionIds by viewModel.favoriteDevotionIds.collectAsState()
     val journals by viewModel.journals.collectAsState()
     val bookmarks by viewModel.bookmarks.collectAsState()
+    val publishedAnnouncements by viewModel.publishedAnnouncements.collectAsState()
     val dailyVerse = remember { ChurchDataSeed.dailyVerse }
     val isDailyVerseBookmarked = bookmarks.any { it.book == "Romans" && it.chapter == 8 && it.verse == 38 }
     val latestSermon = remember { ChurchDataSeed.sermons.first() }
@@ -194,7 +196,153 @@ fun HomeScreen(
                 }
             }
 
-            // 3. Today's Devotional Highlight
+            // 3. Pastoral Letters & Sanctuary Announcements
+            item {
+                Column {
+                    SectionHeader(
+                        title = "Sanctuary Bulletins & Letters",
+                        actionText = "Staff Portal",
+                        onAction = { onNavigateTab(ChurchTab.COMPANION) }
+                    )
+
+                    if (publishedAnnouncements.isNotEmpty()) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            publishedAnnouncements.take(3).forEach { announcement ->
+                                Surface(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .clickable { viewModel.openAnnouncementDetail(announcement) }
+                                        .testTag("home_announcement_item_${announcement.id}"),
+                                    color = MaterialTheme.colorScheme.surface,
+                                    shape = RoundedCornerShape(16.dp),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (announcement.isPinned) ChurchGold.copy(alpha = 0.5f)
+                                        else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                                    ),
+                                    shadowElevation = 2.dp
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(14.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                Surface(
+                                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                                    shape = RoundedCornerShape(6.dp)
+                                                ) {
+                                                    Text(
+                                                        text = announcement.category,
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        fontSize = 10.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                    )
+                                                }
+
+                                                if (announcement.isPinned) {
+                                                    Surface(
+                                                        color = ChurchGold.copy(alpha = 0.2f),
+                                                        shape = RoundedCornerShape(6.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = "📌 Pinned",
+                                                            style = MaterialTheme.typography.labelSmall,
+                                                            fontSize = 10.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = ChurchGoldDark,
+                                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                        )
+                                                    }
+                                                }
+                                            }
+
+                                            Text(
+                                                text = announcement.authorPastorName,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        Text(
+                                            text = announcement.title,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+
+                                        Spacer(modifier = Modifier.height(4.dp))
+
+                                        Text(
+                                            text = announcement.content,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis,
+                                            lineHeight = 18.sp
+                                        )
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            if (announcement.scriptureRef.isNotBlank()) {
+                                                Text(
+                                                    text = "📖 ${announcement.scriptureRef}",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            } else {
+                                                Spacer(modifier = Modifier.width(1.dp))
+                                            }
+
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = "Read Letter",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                                Spacer(modifier = Modifier.width(2.dp))
+                                                Icon(
+                                                    imageVector = CupertinoIcons.ChevronRight,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 4. Today's Devotional Highlight
             item {
                 Column {
                     SectionHeader(
@@ -467,6 +615,14 @@ fun HomeScreen(
                     }
                 }
             }
+        }
+
+        if (uiState.selectedAnnouncementForDetail != null) {
+            AnnouncementDetailModal(
+                announcement = uiState.selectedAnnouncementForDetail!!,
+                onDismiss = { viewModel.closeAnnouncementDetail() },
+                onNavigateTab = onNavigateTab
+            )
         }
     }
 }

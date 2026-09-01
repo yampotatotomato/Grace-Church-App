@@ -86,4 +86,11 @@ object CupertinoIcons {
     val Phone: ImageVector = Icons.Outlined.Phone
     val Email: ImageVector = Icons.Outlined.Email
     val Quote: ImageVector = Icons.Filled.FormatQuote
+    val Lock: ImageVector = Icons.Outlined.Lock
+    val LockOpen: ImageVector = Icons.Outlined.LockOpen
+    val Megaphone: ImageVector = Icons.Filled.Campaign
+    val Send: ImageVector = Icons.Filled.Send
+    val Alarm: ImageVector = Icons.Outlined.Alarm
+    val Pin: ImageVector = Icons.Filled.PushPin
+    val CheckCircle: ImageVector = Icons.Filled.CheckCircle
 }

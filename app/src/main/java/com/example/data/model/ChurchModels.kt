@@ -90,3 +90,23 @@ data class PrayerGroup(
     val description: String,
     val memberCount: Int = 12
 )
+
+data class CompanionStaffUser(
+    val id: String,
+    val name: String,
+    val email: String,
+    val role: String,
+    val title: String,
+    val avatarInitials: String,
+    val accessLevel: String = "Full Publishing & Alerts",
+    val defaultCategory: String = "Pastoral Letter"
+)
+
+enum class AnnouncementCategory(val displayName: String, val tag: String) {
+    PASTORAL_LETTER("Pastoral Letter", "pastoral_letter"),
+    URGENT_ANNOUNCEMENT("Urgent Announcement", "urgent_announcement"),
+    SERMON_STUDY_NOTES("Sermon Study Notes", "sermon_notes"),
+    PRAYER_BULLETIN("Prayer Bulletin", "prayer_bulletin"),
+    EVENT_GATHERING("Event & Gathering", "event_gathering"),
+    MINISTRY_UPDATE("Ministry Update", "ministry_update")
+}
