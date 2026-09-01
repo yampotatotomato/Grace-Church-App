@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Grace Church"
+rootProject.name = "Church App"
 
 include(":app")

@@ -107,6 +107,7 @@ fun PastorsScreen(
         IosTopBar(
             title = "Pastoral Directory",
             subtitle = "MINISTRY CARE & GUIDANCE",
+            titleIcon = CupertinoIcons.Person2Fill,
             actions = {
                 IconButton(
                     onClick = { viewModel.openGuidanceComposer() },

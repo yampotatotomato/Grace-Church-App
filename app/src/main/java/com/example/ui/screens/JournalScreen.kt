@@ -67,6 +67,7 @@ fun JournalScreen(
         IosTopBar(
             title = "Spiritual Journal",
             subtitle = "SANCTUARY REFLECTIONS",
+            titleIcon = CupertinoIcons.SquareAndPencil,
             actions = {
                 IconButton(
                     onClick = { viewModel.openNewJournalModal() },

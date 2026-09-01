@@ -58,6 +58,7 @@ fun SettingsNotificationsScreen(
         IosTopBar(
             title = "Settings & Theme",
             subtitle = "CUSTOMIZATION & PREFERENCES",
+            titleIcon = Icons.Default.Tune,
             navigationIcon = Icons.Default.Close,
             onNavigationClick = onBack
         )

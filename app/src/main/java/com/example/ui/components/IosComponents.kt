@@ -37,6 +37,7 @@ fun IosTopBar(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    titleIcon: ImageVector? = null,
     navigationIcon: ImageVector? = null,
     onNavigationClick: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {}
@@ -46,7 +47,7 @@ fun IosTopBar(
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background.copy(alpha = 0.96f))
             .statusBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -55,36 +56,61 @@ fun IosTopBar(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f, fill = false)
             ) {
                 if (navigationIcon != null && onNavigationClick != null) {
                     IconButton(
                         onClick = onNavigationClick,
                         modifier = Modifier
-                            .size(38.dp)
+                            .size(36.dp)
                             .testTag("top_bar_back_button")
                     ) {
                         Icon(
                             imageVector = navigationIcon,
                             contentDescription = "Back",
-                            tint = IosBlue
+                            tint = IosBlue,
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(4.dp))
                 }
-                Column {
+
+                if (titleIcon != null) {
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(ChurchGold.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = titleIcon,
+                            contentDescription = null,
+                            tint = ChurchGoldDark,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                }
+
+                Column(
+                    modifier = Modifier.weight(1f, fill = false)
+                ) {
                     if (subtitle != null) {
                         Text(
                             text = subtitle.uppercase(),
                             style = MaterialTheme.typography.labelSmall,
-                            color = ChurchGold,
+                            color = ChurchGoldDark,
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.8.sp
+                            letterSpacing = 0.6.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.displaySmall,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground,
                         maxLines = 1,
@@ -92,6 +118,7 @@ fun IosTopBar(
                     )
                 }
             }
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
@@ -107,15 +134,16 @@ fun IosSegmentedControl(
     items: List<String>,
     selectedIndex: Int,
     onSelectedIndexChanged: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    icons: List<ImageVector>? = null
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(44.dp)
+            .height(42.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
             .padding(3.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -123,6 +151,7 @@ fun IosSegmentedControl(
             val isSelected = selectedIndex == index
             val backgroundColor = if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent
             val textColor = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+            val iconTint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
 
             Box(
                 modifier = Modifier
@@ -137,15 +166,31 @@ fun IosSegmentedControl(
                     .testTag("segment_${item.lowercase().replace(" ", "_")}"),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = item,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = textColor,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                ) {
+                    if (icons != null && index < icons.size) {
+                        Icon(
+                            imageVector = icons[index],
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                    Text(
+                        text = item,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontSize = 12.sp,
+                        color = textColor,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
     }

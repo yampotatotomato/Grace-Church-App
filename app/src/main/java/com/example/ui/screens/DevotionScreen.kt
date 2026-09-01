@@ -70,6 +70,7 @@ fun DevotionScreen(
         IosTopBar(
             title = "Daily Devotions",
             subtitle = "SPIRITUAL NOURISHMENT",
+            titleIcon = CupertinoIcons.HeartFill,
             actions = {
                 // Profile View Switcher
                 IconButton(

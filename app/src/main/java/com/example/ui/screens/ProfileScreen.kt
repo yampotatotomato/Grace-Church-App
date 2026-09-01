@@ -62,6 +62,7 @@ fun ProfileScreen(
         IosTopBar(
             title = "Spiritual Profile",
             subtitle = "MEMBER & SANCTUARY",
+            titleIcon = CupertinoIcons.PersonFill,
             actions = {
                 IconButton(
                     onClick = onNavigateToSettings,

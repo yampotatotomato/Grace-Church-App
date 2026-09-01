@@ -61,39 +61,10 @@ fun HomeScreen(
     ) {
         // Top iOS Bar with Cupertino Icons
         IosTopBar(
-            title = "Grace Church",
+            title = "Church App",
             subtitle = "Daily Sanctuary",
+            titleIcon = CupertinoIcons.Sparkles,
             actions = {
-                IconButton(
-                    onClick = { onNavigateTab(ChurchTab.PROFILE) },
-                    modifier = Modifier.testTag("home_profile_button")
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(30.dp)
-                            .clip(CircleShape)
-                            .background(RoyalNavy)
-                            .border(1.dp, uiState.accentTheme.accentColor, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "EM",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = ChurchGold
-                        )
-                    }
-                }
-                IconButton(
-                    onClick = { onNavigateTab(ChurchTab.JOURNAL) },
-                    modifier = Modifier.testTag("home_journal_button")
-                ) {
-                    Icon(
-                        imageVector = CupertinoIcons.SquareAndPencil,
-                        contentDescription = "Spiritual Journal",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
                 IconButton(
                     onClick = { viewModel.openNotificationSettings() },
                     modifier = Modifier.testTag("home_settings_button")
@@ -105,14 +76,24 @@ fun HomeScreen(
                     )
                 }
                 IconButton(
-                    onClick = { viewModel.openNotificationSettings() },
-                    modifier = Modifier.testTag("home_notifications_button")
+                    onClick = { onNavigateTab(ChurchTab.PROFILE) },
+                    modifier = Modifier.testTag("home_profile_button")
                 ) {
-                    Icon(
-                        imageVector = CupertinoIcons.Bell,
-                        contentDescription = "Notifications & Settings",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(RoyalNavy)
+                            .border(1.5.dp, uiState.accentTheme.accentColor, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "EM",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ChurchGold
+                        )
+                    }
                 }
             }
         )
@@ -200,8 +181,10 @@ fun HomeScreen(
             item {
                 Column {
                     SectionHeader(
-                        title = "Sanctuary Bulletins & Letters",
+                        title = "Bulletins & Letters",
                         actionText = "Staff Portal",
+                        icon = CupertinoIcons.Megaphone,
+                        iconTint = ChurchGold,
                         onAction = { onNavigateTab(ChurchTab.COMPANION) }
                     )
 
@@ -348,6 +331,8 @@ fun HomeScreen(
                     SectionHeader(
                         title = "Today's Devotion",
                         actionText = "All Devotions",
+                        icon = CupertinoIcons.HeartFill,
+                        iconTint = DevotionAccent,
                         onAction = { onNavigateTab(ChurchTab.DEVOTION) }
                     )
 
@@ -420,7 +405,9 @@ fun HomeScreen(
                     SectionHeader(
                         title = "Latest Sermon",
                         actionText = "Pastors & Media",
-                        onAction = { onNavigateTab(ChurchTab.SERMONS) }
+                        icon = CupertinoIcons.Headphones,
+                        iconTint = PastorAccent,
+                        onAction = { onNavigateTab(ChurchTab.COMMUNITY) }
                     )
 
                     IosGroupedCard(
@@ -487,6 +474,8 @@ fun HomeScreen(
                     SectionHeader(
                         title = "Local Prayer Groups",
                         actionText = "Find in Area",
+                        icon = CupertinoIcons.Person2Fill,
+                        iconTint = PrayerAccent,
                         onAction = { onNavigateTab(ChurchTab.COMMUNITY) }
                     )
 
@@ -681,30 +670,58 @@ fun SectionHeader(
     title: String,
     actionText: String,
     onAction: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    iconTint: Color = MaterialTheme.colorScheme.primary
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp),
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f, fill = false)
+        ) {
+            if (icon != null) {
+                Box(
+                    modifier = Modifier
+                        .size(26.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(iconTint.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(15.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
         TextButton(
             onClick = onAction,
-            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
         ) {
             Text(
                 text = actionText,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelMedium,
                 color = IosBlue,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1
             )
         }
     }

@@ -280,58 +280,55 @@ fun IosBottomNavigationBar(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .height(64.dp)
-                .padding(horizontal = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .padding(horizontal = 6.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val isHome = selectedTab == ChurchTab.HOME
+            val isScripture = selectedTab == ChurchTab.SCRIPTURE
+            val isDevotion = selectedTab == ChurchTab.DEVOTION || selectedTab == ChurchTab.JOURNAL
+            val isCommunity = selectedTab == ChurchTab.COMMUNITY || selectedTab == ChurchTab.SERMONS
+            val isProfile = selectedTab == ChurchTab.PROFILE || selectedTab == ChurchTab.COMPANION
+
             BottomNavItem(
                 title = "Today",
-                icon = if (selectedTab == ChurchTab.HOME) CupertinoIcons.HouseFill else CupertinoIcons.House,
-                isSelected = selectedTab == ChurchTab.HOME,
+                icon = if (isHome) CupertinoIcons.HouseFill else CupertinoIcons.House,
+                isSelected = isHome,
                 onClick = { onTabSelected(ChurchTab.HOME) },
-                testTag = "tab_home"
+                testTag = "tab_home",
+                modifier = Modifier.weight(1f)
             )
             BottomNavItem(
-                title = "Scripture",
+                title = "Bible",
                 icon = CupertinoIcons.Book,
-                isSelected = selectedTab == ChurchTab.SCRIPTURE,
+                isSelected = isScripture,
                 onClick = { onTabSelected(ChurchTab.SCRIPTURE) },
-                testTag = "tab_scripture"
+                testTag = "tab_scripture",
+                modifier = Modifier.weight(1f)
             )
             BottomNavItem(
                 title = "Devotion",
-                icon = if (selectedTab == ChurchTab.DEVOTION) CupertinoIcons.HeartFill else CupertinoIcons.Heart,
-                isSelected = selectedTab == ChurchTab.DEVOTION,
+                icon = if (isDevotion) CupertinoIcons.HeartFill else CupertinoIcons.Heart,
+                isSelected = isDevotion,
                 onClick = { onTabSelected(ChurchTab.DEVOTION) },
-                testTag = "tab_devotion"
+                testTag = "tab_devotion",
+                modifier = Modifier.weight(1f)
             )
             BottomNavItem(
-                title = "Sermons",
-                icon = CupertinoIcons.Headphones,
-                isSelected = selectedTab == ChurchTab.SERMONS,
-                onClick = { onTabSelected(ChurchTab.SERMONS) },
-                testTag = "tab_sermons"
-            )
-            BottomNavItem(
-                title = "Prayer",
-                icon = if (selectedTab == ChurchTab.COMMUNITY) CupertinoIcons.Person2Fill else CupertinoIcons.Person2,
-                isSelected = selectedTab == ChurchTab.COMMUNITY,
+                title = "Community",
+                icon = if (isCommunity) CupertinoIcons.Person2Fill else CupertinoIcons.Person2,
+                isSelected = isCommunity,
                 onClick = { onTabSelected(ChurchTab.COMMUNITY) },
-                testTag = "tab_community"
-            )
-            BottomNavItem(
-                title = "Companion",
-                icon = if (selectedTab == ChurchTab.COMPANION) CupertinoIcons.Megaphone else CupertinoIcons.Sparkles,
-                isSelected = selectedTab == ChurchTab.COMPANION,
-                onClick = { onTabSelected(ChurchTab.COMPANION) },
-                testTag = "tab_companion"
+                testTag = "tab_community",
+                modifier = Modifier.weight(1f)
             )
             BottomNavItem(
                 title = "Profile",
-                icon = if (selectedTab == ChurchTab.PROFILE) CupertinoIcons.PersonFill else CupertinoIcons.Person,
-                isSelected = selectedTab == ChurchTab.PROFILE,
+                icon = if (isProfile) CupertinoIcons.PersonFill else CupertinoIcons.Person,
+                isSelected = isProfile,
                 onClick = { onTabSelected(ChurchTab.PROFILE) },
-                testTag = "tab_profile"
+                testTag = "tab_profile",
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -343,11 +340,12 @@ fun BottomNavItem(
     icon: ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit,
-    testTag: String
+    testTag: String,
+    modifier: Modifier = Modifier
 ) {
     val activeColor = MaterialTheme.colorScheme.primary
     val iconScale by animateFloatAsState(
-        targetValue = if (isSelected) 1.15f else 1.0f,
+        targetValue = if (isSelected) 1.12f else 1.0f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMediumLow
@@ -355,22 +353,23 @@ fun BottomNavItem(
         label = "nav_icon_scale"
     )
     val tint by animateColorAsState(
-        targetValue = if (isSelected) activeColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
-        animationSpec = tween(220),
+        targetValue = if (isSelected) activeColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        animationSpec = tween(200),
         label = "nav_tint"
     )
     val pillBgColor by animateColorAsState(
         targetValue = if (isSelected) activeColor.copy(alpha = 0.12f) else Color.Transparent,
-        animationSpec = tween(220),
+        animationSpec = tween(200),
         label = "nav_pill_bg"
     )
 
     Column(
-        modifier = Modifier
+        modifier = modifier
+            .fillMaxHeight()
             .clip(RoundedCornerShape(14.dp))
             .background(pillBgColor)
             .clickable(onClick = onClick)
-            .padding(horizontal = 5.dp, vertical = 4.dp)
+            .padding(horizontal = 4.dp, vertical = 6.dp)
             .testTag(testTag),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -380,7 +379,7 @@ fun BottomNavItem(
             contentDescription = title,
             tint = tint,
             modifier = Modifier
-                .size(20.dp)
+                .size(22.dp)
                 .scale(iconScale)
         )
         Spacer(modifier = Modifier.height(2.dp))
@@ -389,8 +388,9 @@ fun BottomNavItem(
             style = MaterialTheme.typography.labelSmall,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             color = tint,
-            fontSize = 9.5.sp,
-            maxLines = 1
+            fontSize = 11.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

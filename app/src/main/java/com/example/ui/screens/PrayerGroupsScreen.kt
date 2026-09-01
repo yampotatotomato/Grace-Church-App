@@ -30,6 +30,7 @@ import com.example.data.local.PrayerRequestEntity
 import com.example.data.model.PrayerGroup
 import com.example.data.repository.ChurchDataSeed
 import com.example.ui.ChurchViewModel
+import com.example.ui.components.CupertinoIcons
 import com.example.ui.components.IosGroupedCard
 import com.example.ui.components.IosSegmentedControl
 import com.example.ui.components.IosTopBar
@@ -59,6 +60,7 @@ fun PrayerGroupsScreen(
         IosTopBar(
             title = "Prayer & Groups",
             subtitle = "COMMUNITY FELLOWSHIP",
+            titleIcon = CupertinoIcons.Person2Fill,
             actions = {
                 if (selectedTabIndex == 1) {
                     IconButton(
