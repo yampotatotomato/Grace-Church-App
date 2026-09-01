@@ -1,14 +1,23 @@
 package com.example.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -17,17 +26,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -44,8 +59,6 @@ import com.example.ui.ChurchTab
 import com.example.ui.ChurchViewModel
 import com.example.ui.components.CupertinoIcons
 import com.example.ui.components.IosGroupedCard
-import com.example.ui.components.IosSegmentedControl
-import com.example.ui.components.IosTopBar
 import com.example.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -65,54 +78,27 @@ fun ScriptureScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val bookmarks by viewModel.bookmarks.collectAsState()
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyListState()
 
+    var showPassagePickerSheet by remember { mutableStateOf(false) }
     var showBookmarksSheet by remember { mutableStateOf(false) }
     var showTextSizeSettings by remember { mutableStateOf(false) }
+    var showTranslationMenu by remember { mutableStateOf(false) }
     var isSearchActive by remember { mutableStateOf(false) }
     var searchKeyword by remember { mutableStateOf("") }
+    var selectedVerseForAction by remember { mutableStateOf<BibleVerse?>(null) }
 
-    // Translations list
     val translations = listOf("NIV", "ESV", "KJV", "NLT")
-    val selectedTranslationIndex = translations.indexOf(uiState.selectedTranslation).coerceAtLeast(0)
 
     val currentBook = uiState.selectedBook
     val currentChapter = remember(currentBook, uiState.selectedChapterNumber) {
         ChurchDataSeed.getChapterForBook(currentBook, uiState.selectedChapterNumber)
     }
 
-    // 3 Input Fields State
-    var bookInputText by remember { mutableStateOf(currentBook.name) }
-    var chapterInputText by remember { mutableStateOf(uiState.selectedChapterNumber.toString()) }
-    var verseInputText by remember { mutableStateOf(uiState.selectedVerseNumber?.toString() ?: "") }
-    var isBookDropdownOpen by remember { mutableStateOf(false) }
-
-    // Keep inputs in sync when UI state updates from external sources (e.g. bookmarks or suggestions)
-    LaunchedEffect(currentBook.name) {
-        bookInputText = currentBook.name
-    }
-    LaunchedEffect(uiState.selectedChapterNumber) {
-        chapterInputText = uiState.selectedChapterNumber.toString()
-    }
-    LaunchedEffect(uiState.selectedVerseNumber) {
-        verseInputText = uiState.selectedVerseNumber?.toString() ?: ""
-    }
-
-    // Autocomplete filtered books
-    val filteredBooks = remember(bookInputText) {
-        if (bookInputText.isBlank()) {
-            ChurchDataSeed.allBibleBooksMetadata
-        } else {
-            val query = bookInputText.trim().lowercase()
-            ChurchDataSeed.allBibleBooksMetadata.filter {
-                it.name.lowercase().contains(query) || it.category.lowercase().contains(query)
-            }
-        }
-    }
-
-    // Popular Suggestions list
+    // Popular Suggestions list for quick jumps
     val suggestions = remember {
         listOf(
             PopularPassageSuggestion("John 3:16", "John", 3, 16, "God's Love"),
@@ -120,36 +106,14 @@ fun ScriptureScreen(
             PopularPassageSuggestion("Romans 8:28", "Romans", 8, 28, "God's Purpose"),
             PopularPassageSuggestion("Philippians 4:6", "Philippians", 4, 6, "Peace in Prayer"),
             PopularPassageSuggestion("Matthew 5:3", "Matthew", 5, 3, "The Beatitudes"),
-            PopularPassageSuggestion("Genesis 1:1", "Genesis", 1, 1, "In the Beginning"),
-            PopularPassageSuggestion("Ephesians 2:8", "Ephesians", 2, 8, "Saved by Grace"),
-            PopularPassageSuggestion("1 Cor 13:4", "1 Corinthians", 13, 4, "Love is Patient"),
-            PopularPassageSuggestion("Proverbs 3:5", "Proverbs", 3, 5, "Trust the Lord"),
-            PopularPassageSuggestion("Isaiah 40:31", "Isaiah", 40, 31, "Renew Strength"),
-            PopularPassageSuggestion("Revelation 21:4", "Revelation", 21, 4, "No More Tears"),
-            PopularPassageSuggestion("Joshua 1:9", "Joshua", 1, 9, "Strong & Courageous"),
-            PopularPassageSuggestion("Jeremiah 29:11", "Jeremiah", 29, 11, "Hope & Future"),
-            PopularPassageSuggestion("Hebrews 11:1", "Hebrews", 11, 1, "Living Faith")
+            PopularPassageSuggestion("Genesis 1:1", "Genesis", 1, 1, "Creation"),
+            PopularPassageSuggestion("1 Cor 13:4", "1 Corinthians", 13, 4, "Love"),
+            PopularPassageSuggestion("Proverbs 3:5", "Proverbs", 3, 5, "Trust"),
+            PopularPassageSuggestion("Isaiah 40:31", "Isaiah", 40, 31, "Strength")
         )
     }
 
-    // Function to apply navigation
-    fun applyPassageNavigation(book: BibleBook? = null, chapter: Int? = null, verse: Int? = null) {
-        focusManager.clearFocus()
-        isBookDropdownOpen = false
-
-        val targetBook = book ?: ChurchDataSeed.findBookByName(bookInputText) ?: currentBook
-        val chNum = chapter ?: chapterInputText.toIntOrNull() ?: 1
-        val vNum = verse ?: verseInputText.toIntOrNull()
-
-        viewModel.setScriptureBook(targetBook, chNum, vNum)
-        bookInputText = targetBook.name
-        chapterInputText = chNum.coerceIn(1, targetBook.chapterCount.coerceAtLeast(1)).toString()
-        if (vNum != null) {
-            verseInputText = vNum.toString()
-        }
-    }
-
-    // Main Scripture Text Flow
+    // Filtered verses when searching
     val displayVerses = remember(searchKeyword, currentChapter) {
         if (searchKeyword.isBlank()) {
             currentChapter.verses
@@ -170,595 +134,513 @@ fun ScriptureScreen(
         }
     }
 
-    // Scroll to selected verse when targeted
+    // Auto-scroll when specific verse is highlighted
     LaunchedEffect(uiState.selectedVerseNumber, displayVerses) {
         val targetVerse = uiState.selectedVerseNumber
         if (targetVerse != null && searchKeyword.isBlank()) {
             val targetIndex = displayVerses.indexOfFirst { it.verseNumber == targetVerse }
             if (targetIndex >= 0) {
-                // Offset + 2 accounts for top header items in LazyColumn
                 listState.animateScrollToItem((targetIndex + 1).coerceAtLeast(0))
             }
         }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        // Top Bar
-        IosTopBar(
-            title = "Holy Scripture",
-            subtitle = "BIBLE READER",
-            actions = {
-                // Profile View Switcher
-                IconButton(
-                    onClick = { viewModel.selectTab(ChurchTab.PROFILE) },
-                    modifier = Modifier.testTag("scripture_open_profile_button")
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(CircleShape)
-                            .background(RoyalNavy),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "EM",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = ChurchGold
-                        )
-                    }
-                }
-
-                // Search toggle
-                IconButton(
-                    onClick = { isSearchActive = !isSearchActive },
-                    modifier = Modifier.testTag("scripture_search_toggle_button")
-                ) {
-                    Icon(
-                        imageVector = CupertinoIcons.Search,
-                        contentDescription = "Search Scripture",
-                        tint = if (isSearchActive) RoyalNavy else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                // Bookmarks drawer button
-                IconButton(
-                    onClick = { showBookmarksSheet = true },
-                    modifier = Modifier.testTag("scripture_bookmarks_button")
-                ) {
-                    BadgedBox(
-                        badge = {
-                            if (bookmarks.isNotEmpty()) {
-                                Badge { Text(bookmarks.size.toString()) }
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Bookmarks,
-                            contentDescription = "Saved Bookmarks",
-                            tint = RoyalNavy
-                        )
-                    }
-                }
-
-                // Text Size Accessibility
-                IconButton(
-                    onClick = { showTextSizeSettings = !showTextSizeSettings },
-                    modifier = Modifier.testTag("scripture_font_size_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FormatSize,
-                        contentDescription = "Adjust Font Size",
-                        tint = RoyalNavy
-                    )
-                }
-            }
-        )
-
-        // 1. Translation Selector (Versions of the Bible)
-        IosSegmentedControl(
-            items = translations,
-            selectedIndex = selectedTranslationIndex,
-            onSelectedIndexChanged = { viewModel.setTranslation(translations[it]) },
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
-        )
-
-        // 2. 3 INPUT FIELDS (Book, Chapter, Verse) - Placed directly BELOW the versions of the Bible
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 6.dp)
-                .shadow(4.dp, RoundedCornerShape(18.dp)),
-            shape = RoundedCornerShape(18.dp),
-            color = MaterialTheme.colorScheme.surface,
-            border = androidx.compose.foundation.BorderStroke(
-                1.dp,
-                MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
-            )
-        ) {
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(14.dp)
+                    .background(MaterialTheme.colorScheme.surface)
             ) {
-                // Header row for Navigator
+                // Top Action Bar
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Profile avatar badge
+                    IconButton(
+                        onClick = { viewModel.selectTab(ChurchTab.PROFILE) },
+                        modifier = Modifier
+                            .size(38.dp)
+                            .testTag("scripture_open_profile_button")
+                    ) {
                         Box(
                             modifier = Modifier
-                                .size(24.dp)
+                                .size(32.dp)
                                 .clip(CircleShape)
-                                .background(ScriptureAccent.copy(alpha = 0.15f)),
+                                .background(RoyalNavy),
                             contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "EM",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ChurchGold
+                            )
+                        }
+                    }
+
+                    // Main Clean Passage Selector Pill (e.g. "Romans 8 ▼")
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .clickable { showPassagePickerSheet = true }
+                            .testTag("scripture_passage_picker_btn")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
                         ) {
                             Icon(
                                 imageVector = CupertinoIcons.Book,
                                 contentDescription = null,
                                 tint = ScriptureAccent,
-                                modifier = Modifier.size(14.dp)
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "${currentBook.name} ${currentChapter.chapterNumber}",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 15.sp
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Select Passage",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "PASSAGE NAVIGATOR",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = ScriptureAccent,
-                            letterSpacing = 1.sp
-                        )
                     }
 
-                    Text(
-                        text = "${currentBook.testament} • ${currentBook.category}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp
-                    )
+                    // Top Action Icons (Search, Translation, Aa, Bookmarks)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        // Translation Pill
+                        Box {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = RoyalNavy.copy(alpha = 0.08f),
+                                border = BorderStroke(1.dp, RoyalNavy.copy(alpha = 0.2f)),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { showTranslationMenu = true }
+                                    .testTag("scripture_translation_btn")
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                                ) {
+                                    Text(
+                                        text = uiState.selectedTranslation,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = RoyalNavy,
+                                        fontSize = 11.sp
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowDropDown,
+                                        contentDescription = null,
+                                        tint = RoyalNavy,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
+
+                            DropdownMenu(
+                                expanded = showTranslationMenu,
+                                onDismissRequest = { showTranslationMenu = false }
+                            ) {
+                                translations.forEach { trans ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Text(
+                                                    text = trans,
+                                                    fontWeight = if (trans == uiState.selectedTranslation) FontWeight.Bold else FontWeight.Normal,
+                                                    color = if (trans == uiState.selectedTranslation) RoyalNavy else MaterialTheme.colorScheme.onSurface
+                                                )
+                                                if (trans == uiState.selectedTranslation) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Check,
+                                                        contentDescription = null,
+                                                        tint = ChurchGold,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onClick = {
+                                            viewModel.setTranslation(trans)
+                                            showTranslationMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Search Toggle Button
+                        IconButton(
+                            onClick = { isSearchActive = !isSearchActive },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("scripture_search_toggle_button")
+                        ) {
+                            Icon(
+                                imageVector = if (isSearchActive) Icons.Default.Close else CupertinoIcons.Search,
+                                contentDescription = "Search Scripture",
+                                tint = if (isSearchActive) RoyalNavy else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(19.dp)
+                            )
+                        }
+
+                        // Reader Appearance (Aa)
+                        IconButton(
+                            onClick = { showTextSizeSettings = !showTextSizeSettings },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("scripture_font_size_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.FormatSize,
+                                contentDescription = "Adjust Font Size",
+                                tint = if (showTextSizeSettings) RoyalNavy else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        // Bookmarks Button with Badge
+                        IconButton(
+                            onClick = { showBookmarksSheet = true },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("scripture_bookmarks_button")
+                        ) {
+                            BadgedBox(
+                                badge = {
+                                    if (bookmarks.isNotEmpty()) {
+                                        Badge(
+                                            containerColor = ChurchGold,
+                                            contentColor = RoyalNavy
+                                        ) {
+                                            Text(bookmarks.size.toString(), fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = CupertinoIcons.Bookmark,
+                                    contentDescription = "Saved Bookmarks",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(19.dp)
+                                )
+                            }
+                        }
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // The 3 Input Fields in a neat, responsive Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                // Collapsible Search Bar
+                AnimatedVisibility(
+                    visible = isSearchActive,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
                 ) {
-                    // Field 1: Book of the Bible (with Autocomplete Dropdown)
-                    Box(modifier = Modifier.weight(2.0f)) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                    ) {
                         OutlinedTextField(
-                            value = bookInputText,
-                            onValueChange = {
-                                bookInputText = it
-                                isBookDropdownOpen = true
-                            },
-                            label = { Text("Book", fontSize = 12.sp) },
-                            placeholder = { Text("e.g. John") },
-                            singleLine = true,
+                            value = searchKeyword,
+                            onValueChange = { searchKeyword = it },
+                            placeholder = { Text("Search verses, words (e.g. 'grace', 'peace')...", fontSize = 13.sp) },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = CupertinoIcons.Book,
+                                    imageVector = CupertinoIcons.Search,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp),
                                     tint = ScriptureAccent
                                 )
                             },
                             trailingIcon = {
-                                IconButton(
-                                    onClick = { isBookDropdownOpen = !isBookDropdownOpen },
-                                    modifier = Modifier.size(28.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = if (isBookDropdownOpen) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
-                                        contentDescription = "Show books",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                if (searchKeyword.isNotEmpty()) {
+                                    IconButton(onClick = { searchKeyword = "" }) {
+                                        Icon(imageVector = Icons.Default.Close, contentDescription = "Clear", modifier = Modifier.size(16.dp))
+                                    }
                                 }
                             },
-                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true,
+                            shape = RoundedCornerShape(14.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
                                 focusedBorderColor = RoyalNavy,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onNext = {
-                                    applyPassageNavigation()
-                                }
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .onFocusChanged {
-                                    if (it.isFocused) {
-                                        isBookDropdownOpen = true
-                                    }
-                                }
-                                .testTag("scripture_input_book")
-                        )
-
-                        // Autocomplete Dropdown Menu for Book selection
-                        DropdownMenu(
-                            expanded = isBookDropdownOpen && filteredBooks.isNotEmpty(),
-                            onDismissRequest = { isBookDropdownOpen = false },
-                            modifier = Modifier
-                                .widthIn(min = 220.dp, max = 300.dp)
-                                .heightIn(max = 280.dp)
-                                .background(MaterialTheme.colorScheme.surface)
-                        ) {
-                            filteredBooks.take(15).forEach { b ->
-                                val isCurrent = b.name.equals(currentBook.name, ignoreCase = true)
-                                DropdownMenuItem(
-                                    text = {
-                                        Column {
-                                            Text(
-                                                text = b.name,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
-                                                color = if (isCurrent) RoyalNavy else MaterialTheme.colorScheme.onSurface
-                                            )
-                                            Text(
-                                                text = "${b.testament} • ${b.chapterCount} ch",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                fontSize = 10.sp
-                                            )
-                                        }
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = if (isCurrent) Icons.Default.Check else CupertinoIcons.Book,
-                                            contentDescription = null,
-                                            tint = if (isCurrent) ChurchGold else MaterialTheme.colorScheme.outline,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    },
-                                    onClick = {
-                                        bookInputText = b.name
-                                        isBookDropdownOpen = false
-                                        applyPassageNavigation(book = b, chapter = 1, verse = null)
-                                    },
-                                    modifier = Modifier.testTag("book_suggestion_${b.name}")
-                                )
-                            }
-                        }
-                    }
-
-                    // Field 2: Chapter Input
-                    OutlinedTextField(
-                        value = chapterInputText,
-                        onValueChange = { input ->
-                            val digitsOnly = input.filter { it.isDigit() }
-                            chapterInputText = digitsOnly
-                            if (digitsOnly.isNotBlank()) {
-                                val ch = digitsOnly.toIntOrNull()
-                                if (ch != null && ch in 1..currentBook.chapterCount) {
-                                    viewModel.setScriptureChapter(ch, verseInputText.toIntOrNull())
-                                }
-                            }
-                        },
-                        label = { Text("Ch", fontSize = 12.sp) },
-                        placeholder = { Text("1") },
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                            focusedBorderColor = RoyalNavy,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-                        ),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Next
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onNext = {
-                                applyPassageNavigation()
-                            }
-                        ),
-                        modifier = Modifier
-                            .weight(1.0f)
-                            .testTag("scripture_input_chapter")
-                    )
-
-                    // Field 3: Verse Input
-                    OutlinedTextField(
-                        value = verseInputText,
-                        onValueChange = { input ->
-                            val digitsOnly = input.filter { it.isDigit() }
-                            verseInputText = digitsOnly
-                            val vNum = digitsOnly.toIntOrNull()
-                            viewModel.setScriptureVerse(vNum)
-                        },
-                        label = { Text("Verse", fontSize = 12.sp) },
-                        placeholder = { Text("All") },
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                            focusedBorderColor = RoyalNavy,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-                        ),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                applyPassageNavigation()
-                            }
-                        ),
-                        modifier = Modifier
-                            .weight(1.1f)
-                            .testTag("scripture_input_verse")
-                    )
-
-                    // Go / Jump Action Button
-                    Button(
-                        onClick = { applyPassageNavigation() },
-                        shape = RoundedCornerShape(12.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = RoyalNavy,
-                            contentColor = Color.White
-                        ),
-                        modifier = Modifier
-                            .height(54.dp)
-                            .testTag("scripture_go_button")
-                    ) {
-                        Icon(
-                            imageVector = CupertinoIcons.ArrowRight,
-                            contentDescription = "Go to Passage",
-                            modifier = Modifier.size(18.dp)
+                                .testTag("scripture_keyword_search_input")
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Suggestions Section (Horizontal scroll chips for popular scriptures)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                // Collapsible Quick Text Size Settings
+                AnimatedVisibility(
+                    visible = showTextSizeSettings,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
                 ) {
-                    Text(
-                        text = "Suggestions:",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     ) {
-                        items(suggestions) { s ->
-                            SuggestionChip(
-                                onClick = {
-                                    applyPassageNavigation(
-                                        book = ChurchDataSeed.findBookByName(s.bookName),
-                                        chapter = s.chapter,
-                                        verse = s.verse
-                                    )
-                                },
-                                label = {
-                                    Text(
-                                        text = s.title,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 11.sp
-                                    )
-                                },
-                                colors = SuggestionChipDefaults.suggestionChipColors(
-                                    containerColor = if (currentBook.name == s.bookName && uiState.selectedChapterNumber == s.chapter && uiState.selectedVerseNumber == s.verse) {
-                                        ChurchGold.copy(alpha = 0.2f)
-                                    } else {
-                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                                    },
-                                    labelColor = if (currentBook.name == s.bookName && uiState.selectedChapterNumber == s.chapter && uiState.selectedVerseNumber == s.verse) {
-                                        RoyalNavy
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurface
-                                    }
-                                ),
-                                border = SuggestionChipDefaults.suggestionChipBorder(
-                                    enabled = true,
-                                    borderColor = if (currentBook.name == s.bookName && uiState.selectedChapterNumber == s.chapter && uiState.selectedVerseNumber == s.verse) {
-                                        ChurchGold
-                                    } else {
-                                        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                                    }
-                                ),
-                                shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier.testTag("suggestion_chip_${s.title.replace(" ", "_")}")
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "A",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            Slider(
+                                value = uiState.readerFontSizeSp,
+                                onValueChange = { viewModel.setReaderFontSize(it) },
+                                valueRange = 14f..26f,
+                                steps = 5,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 12.dp)
+                            )
+
+                            Text(
+                                text = "A",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Text(
+                                text = "${uiState.readerFontSizeSp.toInt()} sp",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = RoyalNavy
                             )
                         }
                     }
                 }
+
+                // Subtle bottom border line
+                Divider(
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f),
+                    thickness = 1.dp
+                )
             }
-        }
-
-        // Search Bar (Collapsible)
-        AnimatedVisibility(visible = isSearchActive) {
-            OutlinedTextField(
-                value = searchKeyword,
-                onValueChange = { searchKeyword = it },
-                placeholder = { Text("Search keyword across verses (e.g. 'peace', 'refuge')") },
-                leadingIcon = {
-                    Icon(imageVector = CupertinoIcons.Search, contentDescription = null)
-                },
-                trailingIcon = {
-                    if (searchKeyword.isNotEmpty()) {
-                        IconButton(onClick = { searchKeyword = "" }) {
-                            Icon(imageVector = Icons.Default.Close, contentDescription = "Clear")
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                    focusedBorderColor = RoyalNavy
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                    .testTag("scripture_keyword_search_input")
-            )
-        }
-
-        // Accessibility Font Size Slider (Collapsible)
-        AnimatedVisibility(visible = showTextSizeSettings) {
+        },
+        bottomBar = {
+            // Clean Bottom Floating Chapter Navigator Bar
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                shape = RoundedCornerShape(14.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+                    .navigationBarsPadding(),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Previous Chapter Button
+                    TextButton(
+                        onClick = {
+                            if (uiState.selectedChapterNumber > 1) {
+                                viewModel.setScriptureChapter(uiState.selectedChapterNumber - 1)
+                            } else {
+                                val bookIndex = ChurchDataSeed.bibleBooks.indexOfFirst { it.name == currentBook.name }
+                                if (bookIndex > 0) {
+                                    val prevBook = ChurchDataSeed.bibleBooks[bookIndex - 1]
+                                    viewModel.setScriptureBook(prevBook, prevBook.chapterCount)
+                                }
+                            }
+                        },
+                        modifier = Modifier.testTag("scripture_prev_chapter_btn")
                     ) {
-                        Text(
-                            text = "Reading Text Size",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = RoyalNavy
                         )
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "${uiState.readerFontSizeSp.toInt()} sp",
+                            text = "Previous",
                             style = MaterialTheme.typography.labelMedium,
-                            color = RoyalNavy,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.SemiBold,
+                            color = RoyalNavy
                         )
                     }
-                    Slider(
-                        value = uiState.readerFontSizeSp,
-                        onValueChange = { viewModel.setReaderFontSize(it) },
-                        valueRange = 14f..26f,
-                        steps = 5,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+
+                    // Chapter indicator text
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { showPassagePickerSheet = true }
+                    ) {
+                        Text(
+                            text = "Ch ${currentChapter.chapterNumber} of ${currentBook.chapterCount}",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+
+                    // Next Chapter Button
+                    TextButton(
+                        onClick = {
+                            if (uiState.selectedChapterNumber < currentBook.chapterCount) {
+                                viewModel.setScriptureChapter(uiState.selectedChapterNumber + 1)
+                            } else {
+                                val bookIndex = ChurchDataSeed.bibleBooks.indexOfFirst { it.name == currentBook.name }
+                                if (bookIndex >= 0 && bookIndex < ChurchDataSeed.bibleBooks.size - 1) {
+                                    val nextBook = ChurchDataSeed.bibleBooks[bookIndex + 1]
+                                    viewModel.setScriptureBook(nextBook, 1)
+                                }
+                            }
+                        },
+                        modifier = Modifier.testTag("scripture_next_chapter_btn")
+                    ) {
+                        Text(
+                            text = "Next",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = RoyalNavy
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = RoyalNavy
+                        )
+                    }
                 }
             }
         }
-
-        // Quick Chapter Stepper Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextButton(
-                onClick = {
-                    if (uiState.selectedChapterNumber > 1) {
-                        viewModel.setScriptureChapter(uiState.selectedChapterNumber - 1)
-                    }
-                },
-                enabled = uiState.selectedChapterNumber > 1,
-                modifier = Modifier.testTag("scripture_prev_chapter_btn")
-            ) {
-                Icon(
-                    imageVector = CupertinoIcons.ChevronLeft,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Previous Chapter")
-            }
-
-            Surface(
-                shape = RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                modifier = Modifier.padding(horizontal = 4.dp)
-            ) {
-                Text(
-                    text = "${currentBook.name} ${currentChapter.chapterNumber} of ${currentBook.chapterCount}",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                )
-            }
-
-            TextButton(
-                onClick = {
-                    if (uiState.selectedChapterNumber < currentBook.chapterCount) {
-                        viewModel.setScriptureChapter(uiState.selectedChapterNumber + 1)
-                    }
-                },
-                enabled = uiState.selectedChapterNumber < currentBook.chapterCount,
-                modifier = Modifier.testTag("scripture_next_chapter_btn")
-            ) {
-                Text("Next Chapter")
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    imageVector = CupertinoIcons.ChevronRight,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
-
-        // Main Scripture Text Flow (LazyColumn)
+    ) { paddingValues ->
+        // Main Clean Scripture Reading Canvas
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 4.dp, bottom = 120.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(paddingValues)
+                .padding(horizontal = 20.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 40.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            if (searchKeyword.isNotBlank()) {
-                item {
-                    Text(
-                        text = "Found ${displayVerses.size} verses matching \"$searchKeyword\"",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = ScriptureAccent,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            } else {
+            // Chapter Title Header
+            if (searchKeyword.isBlank()) {
                 item {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp),
+                            .padding(vertical = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "${currentBook.name} Chapter ${currentChapter.chapterNumber}",
-                            style = MaterialTheme.typography.titleLarge,
+                            text = currentBook.name.uppercase(),
+                            style = AppleTypographyStyles.referenceTag,
+                            color = ScriptureAccent,
+                            letterSpacing = 2.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
+                            fontSize = 12.sp
                         )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
                         Text(
-                            text = "${currentBook.testament} • ${uiState.selectedTranslation}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = "Chapter ${currentChapter.chapterNumber}",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontFamily = FontFamily.Serif
                         )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Text(
+                            text = "${currentBook.testament} Testament • ${uiState.selectedTranslation}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        )
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Divider(
+                            modifier = Modifier.width(60.dp),
+                            color = ChurchGold,
+                            thickness = 2.dp
+                        )
+                    }
+                }
+            } else {
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = ScriptureAccent.copy(alpha = 0.08f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = CupertinoIcons.Search,
+                                contentDescription = null,
+                                tint = ScriptureAccent,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Found ${displayVerses.size} verses containing \"$searchKeyword\"",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = ScriptureAccent
+                            )
+                        }
                     }
                 }
             }
@@ -768,7 +650,7 @@ fun ScriptureScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(40.dp),
+                            .padding(vertical = 60.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -789,127 +671,502 @@ fun ScriptureScreen(
                 }
             }
 
+            // Continuous, Clean Verse Stream
             itemsIndexed(displayVerses) { _, verse ->
                 val isBookmarked = bookmarks.any {
                     it.book == verse.bookName && it.chapter == verse.chapter && it.verse == verse.verseNumber
                 }
                 val isTargetedVerse = uiState.selectedVerseNumber == verse.verseNumber
+                val isSelectedForAction = selectedVerseForAction?.verseNumber == verse.verseNumber && selectedVerseForAction?.chapter == verse.chapter
 
-                val targetBorderColor by animateColorAsState(
+                val containerColor by animateColorAsState(
                     targetValue = when {
-                        isTargetedVerse -> ChurchGold
-                        isBookmarked -> ChurchGold.copy(alpha = 0.5f)
-                        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
-                    },
-                    animationSpec = tween(300),
-                    label = "border_color"
-                )
-
-                val targetContainerColor by animateColorAsState(
-                    targetValue = when {
+                        isSelectedForAction -> ScriptureAccent.copy(alpha = 0.12f)
                         isTargetedVerse -> ChurchGold.copy(alpha = 0.14f)
-                        isBookmarked -> ChurchGold.copy(alpha = 0.07f)
-                        else -> MaterialTheme.colorScheme.surface
+                        isBookmarked -> ChurchGold.copy(alpha = 0.06f)
+                        else -> Color.Transparent
                     },
-                    animationSpec = tween(300),
-                    label = "container_color"
+                    animationSpec = tween(250),
+                    label = "verse_container"
                 )
 
                 Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = targetContainerColor,
-                    border = androidx.compose.foundation.BorderStroke(
-                        if (isTargetedVerse) 2.dp else 1.dp,
-                        targetBorderColor
-                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    color = containerColor,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
                         .clickable {
-                            viewModel.toggleBookmark(
-                                verse.bookName,
-                                verse.chapter,
-                                verse.verseNumber,
-                                verse.text
-                            )
+                            selectedVerseForAction = if (selectedVerseForAction == verse) null else verse
                         }
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
                         .testTag("verse_item_${verse.bookName}_${verse.chapter}_${verse.verseNumber}")
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.Top
+                            .padding(horizontal = 8.dp, vertical = 6.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    when {
-                                        isTargetedVerse -> ChurchGold
-                                        isBookmarked -> ChurchGold
-                                        else -> RoyalNavy
-                                    }
-                                ),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.Top
                         ) {
-                            Text(
-                                text = "${verse.verseNumber}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            if (searchKeyword.isNotBlank()) {
+                            // Minimal, elegant verse number badge
+                            Box(
+                                modifier = Modifier
+                                    .padding(top = 3.dp)
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        when {
+                                            isBookmarked -> ChurchGold
+                                            isTargetedVerse -> RoyalNavy
+                                            else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                                        }
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Text(
-                                    text = "${verse.bookName} ${verse.chapter}:${verse.verseNumber}",
-                                    style = MaterialTheme.typography.labelSmall,
+                                    text = "${verse.verseNumber}",
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = ScriptureAccent
+                                    color = if (isBookmarked || isTargetedVerse) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
-                            } else if (isTargetedVerse) {
-                                Text(
-                                    text = "★ Highlighted Verse",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = RoyalNavy,
-                                    fontSize = 10.sp
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
                             }
 
-                            Text(
-                                text = verse.text,
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    fontSize = uiState.readerFontSizeSp.sp,
-                                    lineHeight = (uiState.readerFontSizeSp * 1.55f).sp
-                                ),
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontFamily = FontFamily.Serif
-                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            // Verse Text with rich typography
+                            Column(modifier = Modifier.weight(1f)) {
+                                if (searchKeyword.isNotBlank()) {
+                                    Text(
+                                        text = "${verse.bookName} ${verse.chapter}:${verse.verseNumber}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = ScriptureAccent,
+                                        fontSize = 11.sp
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                }
+
+                                Text(
+                                    text = verse.text,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontSize = uiState.readerFontSizeSp.sp,
+                                        lineHeight = (uiState.readerFontSizeSp * 1.55f).sp
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontFamily = FontFamily.Serif
+                                )
+                            }
                         }
 
-                        IconButton(
-                            onClick = {
-                                viewModel.toggleBookmark(
-                                    verse.bookName,
-                                    verse.chapter,
-                                    verse.verseNumber,
-                                    verse.text
-                                )
-                            },
-                            modifier = Modifier.size(32.dp)
+                        // Compact inline action menu when a verse is tapped
+                        AnimatedVisibility(
+                            visible = isSelectedForAction,
+                            enter = expandVertically() + fadeIn(),
+                            exit = shrinkVertically() + fadeOut()
                         ) {
-                            Icon(
-                                imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                                contentDescription = if (isBookmarked) "Remove Bookmark" else "Bookmark Verse",
-                                tint = if (isBookmarked) ChurchGold else MaterialTheme.colorScheme.outline
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Bookmark Action
+                                TextButton(
+                                    onClick = {
+                                        viewModel.toggleBookmark(
+                                            verse.bookName,
+                                            verse.chapter,
+                                            verse.verseNumber,
+                                            verse.text
+                                        )
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = if (isBookmarked) CupertinoIcons.BookmarkFill else CupertinoIcons.Bookmark,
+                                        contentDescription = null,
+                                        tint = if (isBookmarked) ChurchGold else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = if (isBookmarked) "Bookmarked" else "Bookmark",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (isBookmarked) ChurchGold else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                // Copy Action
+                                TextButton(
+                                    onClick = {
+                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                        val clip = ClipData.newPlainText(
+                                            "Scripture",
+                                            "“${verse.text}” — ${verse.bookName} ${verse.chapter}:${verse.verseNumber} (${uiState.selectedTranslation})"
+                                        )
+                                        clipboard.setPrimaryClip(clip)
+                                        viewModel.showToast("Verse copied to clipboard")
+                                        selectedVerseForAction = null
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.ContentCopy,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Copy",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                // Share Action
+                                TextButton(
+                                    onClick = {
+                                        val sendIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(
+                                                Intent.EXTRA_TEXT,
+                                                "“${verse.text}” — ${verse.bookName} ${verse.chapter}:${verse.verseNumber} (${uiState.selectedTranslation})"
+                                            )
+                                            type = "text/plain"
+                                        }
+                                        context.startActivity(Intent.createChooser(sendIntent, "Share Scripture"))
+                                        selectedVerseForAction = null
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = CupertinoIcons.Share,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Share",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Modern Modal Bottom Sheet for Passage Navigation (Clean, searchable, category-indexed)
+    if (showPassagePickerSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showPassagePickerSheet = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+        ) {
+            var selectedTab by remember { mutableIntStateOf(0) } // 0 = OT, 1 = NT, 2 = Direct Jump
+            var pickerBookSearch by remember { mutableStateOf("") }
+            var selectedBookForChapters by remember { mutableStateOf(currentBook) }
+            var isSelectingChapters by remember { mutableStateOf(false) }
+
+            // Direct Jump Input fields
+            var directBookInput by remember { mutableStateOf(currentBook.name) }
+            var directChapterInput by remember { mutableStateOf(uiState.selectedChapterNumber.toString()) }
+            var directVerseInput by remember { mutableStateOf(uiState.selectedVerseNumber?.toString() ?: "") }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 12.dp)
+                    .navigationBarsPadding()
+            ) {
+                // Header Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isSelectingChapters) "${selectedBookForChapters.name} Chapters" else "Select Passage",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    if (isSelectingChapters) {
+                        TextButton(onClick = { isSelectingChapters = false }) {
+                            Text("← Back to Books", color = RoyalNavy, fontWeight = FontWeight.Bold)
+                        }
+                    } else {
+                        IconButton(onClick = { showPassagePickerSheet = false }) {
+                            Icon(imageVector = Icons.Default.Close, contentDescription = "Close")
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                if (!isSelectingChapters) {
+                    // Quick Filter / Segmented Tab (Old Testament / New Testament / Direct Jump)
+                    TabRow(
+                        selectedTabIndex = selectedTab,
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                    ) {
+                        Tab(
+                            selected = selectedTab == 0,
+                            onClick = { selectedTab = 0 },
+                            text = { Text("Old Testament", fontSize = 12.sp, fontWeight = FontWeight.Bold) }
+                        )
+                        Tab(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            text = { Text("New Testament", fontSize = 12.sp, fontWeight = FontWeight.Bold) }
+                        )
+                        Tab(
+                            selected = selectedTab == 2,
+                            onClick = { selectedTab = 2 },
+                            text = { Text("Direct Jump", fontSize = 12.sp, fontWeight = FontWeight.Bold) }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    if (selectedTab == 0 || selectedTab == 1) {
+                        // Search bar for books
+                        OutlinedTextField(
+                            value = pickerBookSearch,
+                            onValueChange = { pickerBookSearch = it },
+                            placeholder = { Text("Search books...", fontSize = 13.sp) },
+                            leadingIcon = {
+                                Icon(imageVector = CupertinoIcons.Search, contentDescription = null, modifier = Modifier.size(16.dp))
+                            },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                                focusedBorderColor = RoyalNavy
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)
+                        )
+
+                        val currentTestamentFilter = if (selectedTab == 0) "Old Testament" else "New Testament"
+                        val booksToShow = remember(pickerBookSearch, currentTestamentFilter) {
+                            ChurchDataSeed.allBibleBooksMetadata.filter {
+                                it.testament == currentTestamentFilter &&
+                                    (pickerBookSearch.isBlank() || it.name.contains(pickerBookSearch, ignoreCase = true))
+                            }
+                        }
+
+                        // Grid of Books
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(3),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 340.dp)
+                        ) {
+                            items(booksToShow) { book ->
+                                val isSelected = currentBook.name == book.name
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = if (isSelected) RoyalNavy else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (isSelected) ChurchGold else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                                    ),
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .clickable {
+                                            selectedBookForChapters = book
+                                            isSelectingChapters = true
+                                        }
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            text = book.name,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = "${book.chapterCount} ch",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = if (isSelected) ChurchGold else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            fontSize = 9.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // Direct Jump 3-field input screen
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = "Enter Book, Chapter, and optional Verse:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = directBookInput,
+                                    onValueChange = { directBookInput = it },
+                                    label = { Text("Book") },
+                                    placeholder = { Text("John") },
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier
+                                        .weight(2f)
+                                        .testTag("scripture_input_book")
+                                )
+
+                                OutlinedTextField(
+                                    value = directChapterInput,
+                                    onValueChange = { directChapterInput = it.filter { c -> c.isDigit() } },
+                                    label = { Text("Ch") },
+                                    placeholder = { Text("1") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .testTag("scripture_input_chapter")
+                                )
+
+                                OutlinedTextField(
+                                    value = directVerseInput,
+                                    onValueChange = { directVerseInput = it.filter { c -> c.isDigit() } },
+                                    label = { Text("Verse") },
+                                    placeholder = { Text("All") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .testTag("scripture_input_verse")
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(
+                                onClick = {
+                                    val matchedBook = ChurchDataSeed.findBookByName(directBookInput) ?: currentBook
+                                    val ch = directChapterInput.toIntOrNull() ?: 1
+                                    val v = directVerseInput.toIntOrNull()
+                                    viewModel.setScriptureBook(matchedBook, ch, v)
+                                    showPassagePickerSheet = false
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = RoyalNavy),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                                    .testTag("scripture_go_button")
+                            ) {
+                                Text("Jump to Passage", fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Suggestions list
+                            Text(
+                                text = "Popular Passages:",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                items(suggestions) { s ->
+                                    SuggestionChip(
+                                        onClick = {
+                                            val b = ChurchDataSeed.findBookByName(s.bookName) ?: currentBook
+                                            viewModel.setScriptureBook(b, s.chapter, s.verse)
+                                            showPassagePickerSheet = false
+                                        },
+                                        label = { Text(s.title, fontWeight = FontWeight.SemiBold) },
+                                        shape = RoundedCornerShape(12.dp),
+                                        modifier = Modifier.testTag("suggestion_chip_${s.title.replace(" ", "_")}")
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Chapter Grid Picker for Selected Book
+                    val chapterCount = selectedBookForChapters.chapterCount.coerceAtLeast(1)
+                    val chaptersList = (1..chapterCount).toList()
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(5),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 340.dp)
+                    ) {
+                        items(chaptersList) { ch ->
+                            val isCurrent = currentBook.name == selectedBookForChapters.name && uiState.selectedChapterNumber == ch
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = if (isCurrent) RoyalNavy else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                border = BorderStroke(
+                                    1.dp,
+                                    if (isCurrent) ChurchGold else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                                ),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        viewModel.setScriptureBook(selectedBookForChapters, ch)
+                                        showPassagePickerSheet = false
+                                    }
+                            ) {
+                                Box(
+                                    modifier = Modifier.padding(vertical = 14.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "$ch",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isCurrent) Color.White else MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -921,12 +1178,14 @@ fun ScriptureScreen(
     if (showBookmarksSheet) {
         ModalBottomSheet(
             onDismissRequest = { showBookmarksSheet = false },
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
+                    .padding(horizontal = 20.dp, vertical = 12.dp)
+                    .navigationBarsPadding()
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -954,10 +1213,10 @@ fun ScriptureScreen(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
-                                imageVector = Icons.Default.BookmarkBorder,
+                                imageVector = CupertinoIcons.Bookmark,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.outline,
-                                modifier = Modifier.size(48.dp)
+                                modifier = Modifier.size(44.dp)
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
@@ -968,7 +1227,7 @@ fun ScriptureScreen(
                             Text(
                                 text = "Tap any verse in the reader to bookmark it.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
                         }
                     }

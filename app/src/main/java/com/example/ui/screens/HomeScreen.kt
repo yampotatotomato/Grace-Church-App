@@ -28,6 +28,7 @@ import com.example.data.repository.ChurchDataSeed
 import com.example.ui.ChurchTab
 import com.example.ui.ChurchViewModel
 import com.example.ui.components.CupertinoIcons
+import com.example.ui.components.DailyScriptureCard
 import com.example.ui.components.IosGroupedCard
 import com.example.ui.components.IosTopBar
 import com.example.ui.theme.*
@@ -43,7 +44,9 @@ fun HomeScreen(
     val joinedGroups by viewModel.joinedGroups.collectAsState()
     val favoriteDevotionIds by viewModel.favoriteDevotionIds.collectAsState()
     val journals by viewModel.journals.collectAsState()
+    val bookmarks by viewModel.bookmarks.collectAsState()
     val dailyVerse = remember { ChurchDataSeed.dailyVerse }
+    val isDailyVerseBookmarked = bookmarks.any { it.book == "Romans" && it.chapter == 8 && it.verse == 38 }
     val latestSermon = remember { ChurchDataSeed.sermons.first() }
     val todayDevotion = remember { ChurchDataSeed.devotionals.first() }
     val featuredGroup = remember { ChurchDataSeed.prayerGroups.first() }
@@ -119,140 +122,27 @@ fun HomeScreen(
             contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            // 1. Verse of the Day Card (Hero Card)
+            // 1. Clean & Minimal Scripture Reading Component (Daily Verse)
             item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .testTag("home_verse_of_day_card"),
-                    colors = CardDefaults.cardColors(containerColor = uiState.accentTheme.primaryColor),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        uiState.accentTheme.primaryColor,
-                                        uiState.accentTheme.accentColor.copy(alpha = 0.6f)
-                                    )
-                                )
-                            )
-                            .padding(22.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(28.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.White.copy(alpha = 0.2f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = CupertinoIcons.Sparkles,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "VERSE OF THE DAY",
-                                    style = AppleTypographyStyles.referenceTag,
-                                    color = Color.White,
-                                    letterSpacing = 1.sp
-                                )
-                            }
-
-                            Text(
-                                text = dailyVerse.date,
-                                style = AppleTypographyStyles.audioTimer,
-                                color = Color.White.copy(alpha = 0.85f),
-                                fontSize = 11.sp
-                            )
+                DailyScriptureCard(
+                    dailyVerse = dailyVerse,
+                    translation = uiState.selectedTranslation,
+                    isBookmarked = isDailyVerseBookmarked,
+                    onReadChapter = {
+                        viewModel.selectTab(ChurchTab.SCRIPTURE)
+                        val romans = ChurchDataSeed.bibleBooks.find { it.name == "Romans" }
+                        if (romans != null) {
+                            viewModel.setScriptureBook(romans, 8)
                         }
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        Text(
-                            text = "“${dailyVerse.text}”",
-                            style = AppleTypographyStyles.scriptureText(18f),
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "— ${dailyVerse.reference}",
-                            style = AppleTypographyStyles.referenceTag,
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontSize = 13.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Quick Actions
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            TextButton(
-                                onClick = {
-                                    viewModel.selectTab(ChurchTab.SCRIPTURE)
-                                    val romans = ChurchDataSeed.bibleBooks.find { it.name == "Romans" }
-                                    if (romans != null) {
-                                        viewModel.setScriptureBook(romans, 8)
-                                    }
-                                },
-                                contentPadding = PaddingValues(0.dp)
-                            ) {
-                                Text(
-                                    text = "Read Chapter 8 →",
-                                    color = Color.White,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-
-                            Row {
-                                IconButton(
-                                    onClick = {
-                                        viewModel.toggleBookmark("Romans", 8, 38, dailyVerse.text)
-                                    },
-                                    modifier = Modifier.size(36.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = CupertinoIcons.Bookmark,
-                                        contentDescription = "Bookmark Verse",
-                                        tint = Color.White
-                                    )
-                                }
-
-                                IconButton(
-                                    onClick = {
-                                        viewModel.triggerTestDailyVersePush(context)
-                                    },
-                                    modifier = Modifier.size(36.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = CupertinoIcons.BellFill,
-                                        contentDescription = "Send Daily Verse Push Notification",
-                                        tint = ChurchGoldLight
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                    },
+                    onToggleBookmark = {
+                        viewModel.toggleBookmark("Romans", 8, 38, dailyVerse.text)
+                    },
+                    onListen = {
+                        viewModel.showToast("Reciting ${dailyVerse.reference}...")
+                    },
+                    modifier = Modifier.testTag("home_daily_scripture_component")
+                )
             }
 
             // 2. Quick Navigation Grid with Cupertino Icons

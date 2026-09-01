@@ -24,5 +24,14 @@ class ExampleUnitTest {
     assertEquals(ChurchScreen.Devotion, ChurchScreen.fromRoute("screen_devotion"))
     assertEquals(ChurchScreen.Profile, ChurchScreen.fromRoute("screen_profile"))
   }
+
+  @Test
+  fun testDailyVerseModelAndSeed() {
+    val dailyVerse = com.example.data.repository.ChurchDataSeed.dailyVerse
+    assertNotNull(dailyVerse)
+    assertTrue(dailyVerse.reference.isNotBlank())
+    assertTrue(dailyVerse.text.isNotBlank())
+    assertTrue(dailyVerse.date.isNotBlank())
+  }
 }
 
