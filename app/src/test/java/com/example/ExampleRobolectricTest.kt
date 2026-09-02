@@ -46,4 +46,12 @@ class ExampleRobolectricTest {
     assertNotNull("Romans book must exist", romans)
     assertTrue("Romans chapter 8 must exist", romans!!.chapters.any { it.chapterNumber == 8 })
   }
+
+  @Test
+  fun `verify devotionals and prayer groups data seed`() {
+    val devotions = ChurchDataSeed.devotionals
+    assertTrue("Devotionals should not be empty", devotions.isNotEmpty())
+    val prayerGroups = ChurchDataSeed.prayerGroups
+    assertTrue("Prayer groups should not be empty", prayerGroups.isNotEmpty())
+  }
 }

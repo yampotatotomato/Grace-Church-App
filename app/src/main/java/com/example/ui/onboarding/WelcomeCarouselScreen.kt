@@ -2,6 +2,7 @@ package com.example.ui.onboarding
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.ui.ChurchTab
+import com.example.ui.ChurchUiState
 import com.example.ui.ChurchViewModel
 import com.example.ui.components.CupertinoIcons
 import com.example.ui.components.IosGroupedCard
@@ -80,38 +82,38 @@ fun WelcomeCarouselScreen(
         listOf(
             OnboardingStepData(
                 stepIndex = 1,
-                title = "Welcome to Grace Sanctuary",
+                title = "Welcome to Church App",
                 subtitle = "FAITH • FELLOWSHIP • SCRIPTURE",
-                tag = "SANCTUARY OVERVIEW",
-                description = "Your digital spiritual home and community sanctuary. Experience Christ-centered worship, scripture reading, prayer fellowships, and pastoral counseling wherever life takes you.",
+                tag = "SANCTUARY & TODAY",
+                description = "Your digital spiritual home and community sanctuary. Experience Christ-centered worship, verse of the day, daily audio devotionals, and live church bulletins wherever you are.",
                 imageRes = R.drawable.img_onboarding_welcome,
                 icon = CupertinoIcons.Sparkles,
                 accentColor = ChurchGold,
-                associatedTab = ChurchTab.DEVOTION,
+                associatedTab = ChurchTab.HOME,
                 highlights = listOf(
                     OnboardingFeatureHighlight(
-                        icon = CupertinoIcons.Book,
-                        title = "Holy Scripture & Expository Study",
-                        description = "NIV, ESV, KJV, and NLT translations with customizable typography."
+                        icon = CupertinoIcons.HouseFill,
+                        title = "Sanctuary Daily Dashboard",
+                        description = "Start every day with inspirational scripture reflections and church community bulletins."
                     ),
                     OnboardingFeatureHighlight(
-                        icon = CupertinoIcons.Person2Fill,
-                        title = "Local Prayer Fellowships",
-                        description = "Connect with believers in regional campuses and online prayer circles."
+                        icon = Icons.Default.Headphones,
+                        title = "Daily Audio Commentary",
+                        description = "Listen to uplifting devotional audio streams with playback and speed controls."
                     ),
                     OnboardingFeatureHighlight(
-                        icon = Icons.Default.Shield,
-                        title = "Pastoral Care & Guidance",
-                        description = "Direct, confidential pastoral inquiries and sermon archives."
+                        icon = CupertinoIcons.Megaphone,
+                        title = "Announcements & Events",
+                        description = "Stay informed on worship services, outreach programs, and ministry updates."
                     )
                 )
             ),
             OnboardingStepData(
                 stepIndex = 2,
-                title = "Holy Scripture & Devotionals",
-                subtitle = "GROW IN GOD'S WORD",
-                tag = "SCRIPTURE & STUDY",
-                description = "Immerse yourself daily in the living Word of God with an elegant reading experience designed for focused contemplation.",
+                title = "Holy Scripture & Bible Study",
+                subtitle = "GROW IN GOD'S LIVING WORD",
+                tag = "BIBLE & TRANSLATIONS",
+                description = "Immerse yourself daily in the Holy Bible with a distraction-free, elegant reading experience designed for deep contemplation and study.",
                 imageRes = R.drawable.img_onboarding_scripture,
                 icon = CupertinoIcons.Book,
                 accentColor = ScriptureAccent,
@@ -120,26 +122,54 @@ fun WelcomeCarouselScreen(
                     OnboardingFeatureHighlight(
                         icon = Icons.Default.Translate,
                         title = "Multi-Translation Switcher",
-                        description = "Instantly toggle between NIV, ESV, KJV, and NLT with verse parallel view."
+                        description = "Instantly toggle between NIV, ESV, KJV, and NLT translations with parallel verse views."
                     ),
                     OnboardingFeatureHighlight(
                         icon = Icons.Default.BookmarkBorder,
-                        title = "Verse Favoriting & Sharing",
-                        description = "Save meaningful scriptures to your favorites bank and share them with loved ones."
+                        title = "Verse Bookmarks & Favorites",
+                        description = "Save meaningful verses to your personal bookmarks bank and share them with loved ones."
                     ),
                     OnboardingFeatureHighlight(
-                        icon = Icons.Default.Headphones,
-                        title = "Daily Guided Devotionals",
-                        description = "Listen to expository audio commentary and reflect on the Verse of the Day."
+                        icon = Icons.Default.FormatSize,
+                        title = "Customizable Typography",
+                        description = "Personalize font sizing, line spacing, and reading presets for comfort."
                     )
                 )
             ),
             OnboardingStepData(
                 stepIndex = 3,
-                title = "Community & Prayer Groups",
+                title = "Daily Devotions & Reflections",
+                subtitle = "SPIRITUAL NOURISHMENT & JOURNAL",
+                tag = "DEVOTIONS & JOURNAL",
+                description = "Cultivate a meaningful habit of daily quiet time with God. Track your spiritual streak and document prayers, devotional notes, and gratitude.",
+                imageRes = R.drawable.img_onboarding_journal,
+                icon = CupertinoIcons.HeartFill,
+                accentColor = DevotionAccent,
+                associatedTab = ChurchTab.DEVOTION,
+                highlights = listOf(
+                    OnboardingFeatureHighlight(
+                        icon = Icons.Default.LocalFireDepartment,
+                        title = "Daily Faith Streaks",
+                        description = "Celebrate consistency in God's presence and track your spiritual growth milestones."
+                    ),
+                    OnboardingFeatureHighlight(
+                        icon = CupertinoIcons.SquareAndPencil,
+                        title = "Private Spiritual Journal",
+                        description = "Reflect on devotions with 100% private, on-device notes, prayers, and gratitude entries."
+                    ),
+                    OnboardingFeatureHighlight(
+                        icon = Icons.Default.FilterList,
+                        title = "Structured Categories",
+                        description = "Organize insights into Devotions, Prayers, Gratitude, and Personal Reflections."
+                    )
+                )
+            ),
+            OnboardingStepData(
+                stepIndex = 4,
+                title = "Community & Pastoral Care",
                 subtitle = "UNITED IN PRAYER & LOVE",
-                tag = "FELLOWSHIP & PRAYER",
-                description = "Find deep Christian community in regional campuses across North, South, East, West, and Online fellowships.",
+                tag = "FELLOWSHIP & CARE",
+                description = "Connect with fellow believers across regional prayer groups, submit confidential prayer requests, and receive biblical guidance from ordained pastors.",
                 imageRes = R.drawable.img_onboarding_community,
                 icon = CupertinoIcons.Person2Fill,
                 accentColor = PrayerAccent,
@@ -147,88 +177,32 @@ fun WelcomeCarouselScreen(
                 highlights = listOf(
                     OnboardingFeatureHighlight(
                         icon = Icons.Default.LocationOn,
-                        title = "Campus & Area Filters",
-                        description = "Browse weekly small groups, home Bible studies, and young adult circles."
-                    ),
-                    OnboardingFeatureHighlight(
-                        icon = Icons.Default.EventAvailable,
-                        title = "1-Tap Meeting RSVPs",
-                        description = "Confirm attendance for weekly gatherings and receive timely reminders."
+                        title = "Regional Prayer Groups",
+                        description = "Join campus and home Bible study groups across North, South, East, West, and Online."
                     ),
                     OnboardingFeatureHighlight(
                         icon = Icons.Default.VolunteerActivism,
-                        title = "Prayer Request Wall",
-                        description = "Share prayer needs confidentially or publicly and pray for church family members."
-                    )
-                )
-            ),
-            OnboardingStepData(
-                stepIndex = 4,
-                title = "Pastoral Care & Counseling",
-                subtitle = "SPIRITUAL SHEPHERDING & SERMONS",
-                tag = "PASTORAL DIRECTORY",
-                description = "Our ordained pastors and ministry leaders are dedicated to walking with you through life decisions, grief, prayer, and biblical guidance.",
-                imageRes = R.drawable.img_onboarding_pastoral,
-                icon = Icons.Default.Shield,
-                accentColor = PastorAccent,
-                associatedTab = ChurchTab.SERMONS,
-                highlights = listOf(
-                    OnboardingFeatureHighlight(
-                        icon = Icons.Default.Badge,
-                        title = "Pastoral Directory & Profiles",
-                        description = "Learn about pastoral specialties in senior leadership, counseling, and youth."
+                        title = "Community Prayer Wall",
+                        description = "Share prayer requests confidentially or publicly and intercede for church family members."
                     ),
                     OnboardingFeatureHighlight(
-                        icon = Icons.Default.MailOutline,
-                        title = "Direct Guidance Requests",
-                        description = "Submit confidential spiritual questions and receive biblical counsel & anchor verses."
-                    ),
-                    OnboardingFeatureHighlight(
-                        icon = Icons.Default.GraphicEq,
-                        title = "Expository Sermon Library",
-                        description = "Stream recent Sunday sermon audio with speed control, key points, and study notes."
+                        icon = Icons.Default.Shield,
+                        title = "Pastoral Directory & Guidance",
+                        description = "Reach pastors directly for confidential counseling and stream expository sermons."
                     )
                 )
             ),
             OnboardingStepData(
                 stepIndex = 5,
-                title = "Spiritual Journaling & Gratitude",
-                subtitle = "DOCUMENT YOUR SPIRITUAL WALK",
-                tag = "SANCTUARY JOURNAL",
-                description = "Cultivate a meaningful habit of private reflection, recording answered prayers, devotional notes, and spiritual gratitude.",
-                imageRes = R.drawable.img_onboarding_journal,
-                icon = CupertinoIcons.SquareAndPencil,
-                accentColor = DevotionAccent,
-                associatedTab = ChurchTab.JOURNAL,
-                highlights = listOf(
-                    OnboardingFeatureHighlight(
-                        icon = Icons.Default.EditNote,
-                        title = "Structured Reflection Categories",
-                        description = "Organize entries into Devotional Insights, Prayers, Gratitude, and Reflections."
-                    ),
-                    OnboardingFeatureHighlight(
-                        icon = Icons.Default.Lock,
-                        title = "100% Private On-Device",
-                        description = "Your personal prayers and journals remain completely private on your phone."
-                    ),
-                    OnboardingFeatureHighlight(
-                        icon = Icons.Default.LocalFireDepartment,
-                        title = "Daily Devotional Streaks",
-                        description = "Track your daily consistency in God's presence and celebrate faith milestones."
-                    )
-                )
-            ),
-            OnboardingStepData(
-                stepIndex = 6,
-                title = "Personalize Your Sanctuary",
+                title = "Personalize Your Experience",
                 subtitle = "CUSTOMIZE YOUR FAITH ROUTINE",
-                tag = "PREFERENCES SETUP",
-                description = "Tailor your Bible translation, daily morning scripture alerts, and ministry focus for an experience uniquely crafted for your walk with God.",
-                imageRes = R.drawable.img_onboarding_welcome,
+                tag = "PREFERENCES & SETUP",
+                description = "Set your preferred Bible translation, morning scripture reminder time, and Sanctuary color theme for a personalized spiritual journey.",
+                imageRes = R.drawable.img_onboarding_pastoral,
                 icon = Icons.Default.Tune,
                 accentColor = ChurchGold,
-                associatedTab = ChurchTab.DEVOTION,
-                highlights = emptyList() // Will show interactive setup widgets
+                associatedTab = ChurchTab.HOME,
+                highlights = emptyList() // Interactive Setup UI
             )
         )
     }
@@ -238,16 +212,15 @@ fun WelcomeCarouselScreen(
     val isLastPage = pagerState.currentPage == totalSteps - 1
     val currentStep = steps[pagerState.currentPage]
 
-    // Selected spiritual preference state for step 6
     var selectedSpiritualFocus by remember { mutableStateOf("Daily Scripture") }
 
     val translations = listOf("NIV", "ESV", "KJV", "NLT")
     val reminderTimes = listOf("06:00 AM", "07:00 AM", "08:00 AM", "09:00 AM")
     val focusOptions = listOf(
         Pair("Daily Scripture", ChurchTab.SCRIPTURE),
-        Pair("Prayer Fellowships", ChurchTab.COMMUNITY),
-        Pair("Pastoral Care", ChurchTab.SERMONS),
-        Pair("Spiritual Journal", ChurchTab.JOURNAL)
+        Pair("Devotions", ChurchTab.DEVOTION),
+        Pair("Prayer & Community", ChurchTab.COMMUNITY),
+        Pair("Sanctuary Today", ChurchTab.HOME)
     )
 
     Column(
@@ -276,7 +249,7 @@ fun WelcomeCarouselScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(32.dp)
+                                .size(34.dp)
                                 .clip(CircleShape)
                                 .background(RoyalNavy),
                             contentAlignment = Alignment.Center
@@ -291,7 +264,7 @@ fun WelcomeCarouselScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = if (isReviewMode) "FEATURE WALKTHROUGH" else "GRACE SANCTUARY",
+                                text = if (isReviewMode) "FEATURE WALKTHROUGH" else "CHURCH APP",
                                 style = AppleTypographyStyles.referenceTag,
                                 fontWeight = FontWeight.Bold,
                                 color = RoyalNavy,
@@ -430,7 +403,7 @@ fun WelcomeCarouselScreen(
                                     colors = listOf(
                                         Color.Black.copy(alpha = 0.2f),
                                         Color.Transparent,
-                                        Color.Black.copy(alpha = 0.8f)
+                                        Color.Black.copy(alpha = 0.82f)
                                     )
                                 )
                             )
@@ -442,7 +415,7 @@ fun WelcomeCarouselScreen(
                             .align(Alignment.TopEnd)
                             .padding(14.dp),
                         shape = RoundedCornerShape(12.dp),
-                        color = Color.Black.copy(alpha = 0.55f)
+                        color = Color.Black.copy(alpha = 0.6f)
                     ) {
                         Text(
                             text = step.tag,
@@ -512,7 +485,7 @@ fun WelcomeCarouselScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // If Step 1 to 5: Display Feature Highlights
+                // If Step 1 to 4: Display Feature Highlights
                 if (step.highlights.isNotEmpty()) {
                     Text(
                         text = "CORE CAPABILITIES & HIGHLIGHTS",
@@ -575,8 +548,8 @@ fun WelcomeCarouselScreen(
                     }
                 }
 
-                // If Step 6: Interactive Personalization Form
-                if (pageIndex == 5) {
+                // If Step 5: Interactive Personalization Form
+                if (pageIndex == 4) {
                     PersonalizationStepWidgets(
                         uiState = uiState,
                         viewModel = viewModel,
@@ -657,7 +630,7 @@ fun WelcomeCarouselScreen(
                     ) {
                         Text(
                             text = if (isLastPage) {
-                                if (isReviewMode) "Complete Review & Enter" else "Enter Grace Sanctuary"
+                                if (isReviewMode) "Complete Review & Enter" else "Enter Church App"
                             } else "Next Step",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold
@@ -677,7 +650,7 @@ fun WelcomeCarouselScreen(
 
 @Composable
 fun PersonalizationStepWidgets(
-    uiState: com.example.ui.ChurchUiState,
+    uiState: ChurchUiState,
     viewModel: ChurchViewModel,
     translations: List<String>,
     reminderTimes: List<String>,
@@ -704,7 +677,7 @@ fun PersonalizationStepWidgets(
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            focusOptions.forEach { (label, tab) ->
+            focusOptions.forEach { (label, _) ->
                 val isSelected = selectedFocus == label
                 FilterChip(
                     selected = isSelected,
@@ -744,7 +717,7 @@ fun PersonalizationStepWidgets(
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = if (isSelected) RoyalNavy else MaterialTheme.colorScheme.surface,
-                    border = androidx.compose.foundation.BorderStroke(
+                    border = BorderStroke(
                         1.dp,
                         if (isSelected) RoyalNavy else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                     ),
@@ -820,7 +793,7 @@ fun PersonalizationStepWidgets(
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = if (isSelected) accent.accentColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface,
-                    border = androidx.compose.foundation.BorderStroke(
+                    border = BorderStroke(
                         if (isSelected) 2.dp else 1.dp,
                         if (isSelected) accent.accentColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                     ),

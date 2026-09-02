@@ -550,7 +550,7 @@ fun ProfileScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = "6-step onboarding tour introducing core features",
+                                        text = "5-step onboarding tour introducing core features",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
