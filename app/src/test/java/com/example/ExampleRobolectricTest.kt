@@ -54,4 +54,78 @@ class ExampleRobolectricTest {
     val prayerGroups = ChurchDataSeed.prayerGroups
     assertTrue("Prayer groups should not be empty", prayerGroups.isNotEmpty())
   }
+
+  @Test
+  fun `verify daily verses list has diverse themes and translations`() {
+    val verses = ChurchDataSeed.dailyVersesList
+    assertTrue("Daily verses list should have multiple verses", verses.size >= 5)
+    
+    val todayVerse = verses.first()
+    assertNotNull("Today's verse reference should be present", todayVerse.reference)
+    assertTrue("Verse text must not be blank", todayVerse.text.isNotBlank())
+    assertTrue("NIV translation must be present", todayVerse.translationTexts.containsKey("NIV"))
+    assertTrue("ESV translation must be present", todayVerse.translationTexts.containsKey("ESV"))
+    assertTrue("KJV translation must be present", todayVerse.translationTexts.containsKey("KJV"))
+    assertTrue("NLT translation must be present", todayVerse.translationTexts.containsKey("NLT"))
+    
+    val hasLoveTheme = verses.any { it.theme.contains("Love", ignoreCase = true) }
+    assertTrue("Should include verses on God's Love", hasLoveTheme)
+    
+    val hasPeaceTheme = verses.any { it.theme.contains("Peace", ignoreCase = true) }
+    assertTrue("Should include verses on Peace & Anxiety", hasPeaceTheme)
+  }
+
+  @Test
+  fun `verify scripture reading goal and checkmark state tracking`() {
+    val app = ApplicationProvider.getApplicationContext<android.app.Application>()
+    val viewModel = com.example.ui.ChurchViewModel(app)
+
+    // Verify initial goal target is at least 1
+    val initialGoal = viewModel.uiState.value.dailyReadingGoalTarget
+    assertTrue("Default reading goal should be >= 1", initialGoal >= 1)
+
+    // Toggle verse completed
+    val testVerse = "Romans 8:28"
+    viewModel.toggleVerseReadingCompleted(testVerse)
+    assertTrue(
+      "Verse should be recorded in completedVerseKeysToday",
+      viewModel.uiState.value.completedVerseKeysToday.contains(testVerse)
+    )
+
+    // Set goal to 1 and verify completion status
+    viewModel.setDailyReadingGoalTarget(1)
+    assertEquals(1, viewModel.uiState.value.dailyReadingGoalTarget)
+    assertTrue(viewModel.uiState.value.completedVerseKeysToday.size >= 1)
+
+    // Toggle chapter completed
+    val chapterKey = "Romans 8"
+    viewModel.toggleChapterReadingCompleted(chapterKey)
+    assertTrue(
+      "Chapter should be recorded in completedChapters",
+      viewModel.uiState.value.completedChapters.contains(chapterKey)
+    )
+  }
+
+  @Test
+  fun `verify prayer groups filtering by category and search keyword`() {
+    val allGroups = ChurchDataSeed.prayerGroups
+    assertTrue("Should have seed prayer groups", allGroups.isNotEmpty())
+
+    // Filter by Young Adults
+    val youngAdultGroups = allGroups.filter { it.category.contains("Young Adults", ignoreCase = true) }
+    assertTrue("Young adult groups should exist", youngAdultGroups.isNotEmpty())
+
+    // Filter by Area / District
+    val downtownGroups = allGroups.filter { it.area.contains("Downtown", ignoreCase = true) }
+    assertTrue("Downtown groups should exist", downtownGroups.isNotEmpty())
+
+    // Search query matching
+    val query = "College"
+    val searchResults = allGroups.filter {
+      it.name.contains(query, ignoreCase = true) ||
+      it.description.contains(query, ignoreCase = true) ||
+      it.category.contains(query, ignoreCase = true)
+    }
+    assertTrue("Search for 'College' should return matching groups", searchResults.isNotEmpty())
+  }
 }

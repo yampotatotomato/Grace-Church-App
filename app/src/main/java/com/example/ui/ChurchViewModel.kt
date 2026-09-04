@@ -63,6 +63,14 @@ data class ChurchUiState(
     val editingJournalEntry: JournalEntryEntity? = null,
     // Community / Prayer State
     val selectedAreaFilter: String = "All Areas",
+    val prayerGroupSearchQuery: String = "",
+    val selectedGroupCategoryFilter: String = "All Categories",
+    val selectedGroupFormatFilter: String = "All Formats",
+    val selectedGroupDayFilter: String = "Any Day",
+    val prayerGroupSortBy: String = "Recommended",
+    val showJoinedGroupsOnly: Boolean = false,
+    val selectedPrayerGroupForDetail: PrayerGroup? = null,
+    val isShowingGroupDetailModal: Boolean = false,
     val isShowingPrayerModal: Boolean = false,
     val isShowingPastorContactModal: Boolean = false,
     val selectedPastorForContact: Pastor? = null,
@@ -112,7 +120,25 @@ data class ChurchUiState(
     val meetingReminderEnabled: Boolean = true,
     val isNotificationSettingsOpen: Boolean = false,
     val isOnboardingReviewOpen: Boolean = false,
-    val userToastMessage: String? = null
+    val userToastMessage: String? = null,
+    // Scripture Reader & Daily Verse state
+    val currentDailyVerse: DailyVerse = ChurchDataSeed.dailyVerse,
+    val isFetchingDailyVerse: Boolean = false,
+    val dailyVerseIndex: Int = 0,
+    val dailyVerseThemeFilter: String = "All",
+    val isDailyVerseReciting: Boolean = false,
+    val dailyVerseRecitationProgress: Float = 0f,
+    val isBookmarksSheetOpen: Boolean = false,
+    val isBookmarkNoteDialogOpen: Boolean = false,
+    val pendingNoteVerse: DailyVerse? = null,
+    // Scripture Reading Goals & Progress
+    val dailyReadingGoalTarget: Int = 3,
+    val completedVerseKeysToday: Set<String> = emptySet(),
+    val readingStreakDays: Int = 3,
+    val completedChapters: Set<String> = emptySet(),
+    val isCelebrationDialogOpen: Boolean = false,
+    val isGoalPickerOpen: Boolean = false,
+    val celebratedGoalReachedToday: Boolean = false
 )
 
 class ChurchViewModel(application: Application) : AndroidViewModel(application) {
@@ -142,7 +168,11 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
             selectedTranslation = prefs.getString("key_bible_translation", "NIV") ?: "NIV",
             dailyVerseNotificationEnabled = prefs.getBoolean("key_daily_verse_notif", true),
             dailyVerseTime = prefs.getString("key_daily_verse_time", "07:00 AM") ?: "07:00 AM",
-            meetingReminderEnabled = prefs.getBoolean("key_meeting_reminder_notif", true)
+            meetingReminderEnabled = prefs.getBoolean("key_meeting_reminder_notif", true),
+            dailyReadingGoalTarget = prefs.getInt("key_reading_goal_target", 3),
+            completedVerseKeysToday = prefs.getStringSet("key_completed_verse_keys", setOf("Romans 8:38-39")) ?: setOf("Romans 8:38-39"),
+            readingStreakDays = prefs.getInt("key_reading_streak_days", 4),
+            completedChapters = prefs.getStringSet("key_completed_chapters", emptySet()) ?: emptySet()
         )
     )
     val uiState: StateFlow<ChurchUiState> = _uiState.asStateFlow()
@@ -338,6 +368,236 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    // Scripture Reader & Daily Verse Actions
+    fun fetchDailyVerse(index: Int) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isFetchingDailyVerse = true) }
+            kotlinx.coroutines.delay(200) // subtle visual fetch feedback
+            val verse = repository.getDailyVerseByIndex(index)
+            _uiState.update {
+                it.copy(
+                    currentDailyVerse = verse,
+                    dailyVerseIndex = index,
+                    isFetchingDailyVerse = false
+                )
+            }
+        }
+    }
+
+    fun fetchNextDailyVerse() {
+        val nextIndex = _uiState.value.dailyVerseIndex + 1
+        fetchDailyVerse(nextIndex)
+    }
+
+    fun fetchPreviousDailyVerse() {
+        val prevIndex = _uiState.value.dailyVerseIndex - 1
+        fetchDailyVerse(prevIndex)
+    }
+
+    fun fetchRandomDailyVerse() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isFetchingDailyVerse = true) }
+            kotlinx.coroutines.delay(250)
+            val randomVerse = repository.getRandomDailyVerse()
+            val newIndex = ChurchDataSeed.dailyVersesList.indexOf(randomVerse).coerceAtLeast(0)
+            _uiState.update {
+                it.copy(
+                    currentDailyVerse = randomVerse,
+                    dailyVerseIndex = newIndex,
+                    isFetchingDailyVerse = false
+                )
+            }
+            showToast("Fetched daily scripture: ${randomVerse.reference}")
+        }
+    }
+
+    fun filterDailyVerseByTheme(theme: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isFetchingDailyVerse = true, dailyVerseThemeFilter = theme) }
+            kotlinx.coroutines.delay(200)
+            val verse = if (theme.equals("All", ignoreCase = true)) {
+                repository.getDailyVerseByIndex(0)
+            } else {
+                repository.getDailyVerseByTheme(theme)
+            }
+            val newIndex = ChurchDataSeed.dailyVersesList.indexOf(verse).coerceAtLeast(0)
+            _uiState.update {
+                it.copy(
+                    currentDailyVerse = verse,
+                    dailyVerseIndex = newIndex,
+                    isFetchingDailyVerse = false
+                )
+            }
+        }
+    }
+
+    fun toggleDailyVerseBookmark(verse: DailyVerse) {
+        viewModelScope.launch {
+            val textToSave = verse.translationTexts[_uiState.value.selectedTranslation] ?: verse.text
+            repository.toggleBookmark(
+                book = verse.book,
+                chapter = verse.chapter,
+                verse = verse.verse,
+                text = textToSave,
+                translation = _uiState.value.selectedTranslation
+            )
+            showToast("Bookmark updated for ${verse.reference}")
+        }
+    }
+
+    fun saveBookmarkWithNote(verse: DailyVerse, note: String) {
+        viewModelScope.launch {
+            val textToSave = verse.translationTexts[_uiState.value.selectedTranslation] ?: verse.text
+            repository.saveBookmark(
+                book = verse.book,
+                chapter = verse.chapter,
+                verse = verse.verse,
+                text = textToSave,
+                translation = _uiState.value.selectedTranslation,
+                note = note
+            )
+            _uiState.update { it.copy(isBookmarkNoteDialogOpen = false, pendingNoteVerse = null) }
+            showToast("Saved note for ${verse.reference}")
+        }
+    }
+
+    fun openBookmarkNoteDialog(verse: DailyVerse) {
+        _uiState.update { it.copy(isBookmarkNoteDialogOpen = true, pendingNoteVerse = verse) }
+    }
+
+    fun closeBookmarkNoteDialog() {
+        _uiState.update { it.copy(isBookmarkNoteDialogOpen = false, pendingNoteVerse = null) }
+    }
+
+    fun openBookmarksSheet() {
+        _uiState.update { it.copy(isBookmarksSheetOpen = true) }
+    }
+
+    fun closeBookmarksSheet() {
+        _uiState.update { it.copy(isBookmarksSheetOpen = false) }
+    }
+
+    fun deleteBookmark(book: String, chapter: Int, verse: Int) {
+        viewModelScope.launch {
+            repository.deleteBookmark(book, chapter, verse)
+            showToast("Removed bookmark")
+        }
+    }
+
+    private var recitationJob: kotlinx.coroutines.Job? = null
+
+    fun toggleDailyVerseRecitation(verse: DailyVerse) {
+        val currentlyReciting = _uiState.value.isDailyVerseReciting
+        if (currentlyReciting) {
+            recitationJob?.cancel()
+            _uiState.update { it.copy(isDailyVerseReciting = false, dailyVerseRecitationProgress = 0f) }
+            showToast("Recitation paused")
+        } else {
+            _uiState.update { it.copy(isDailyVerseReciting = true, dailyVerseRecitationProgress = 0.05f) }
+            showToast("Reciting ${verse.reference} (${_uiState.value.selectedTranslation})...")
+            recitationJob?.cancel()
+            recitationJob = viewModelScope.launch {
+                for (step in 1..20) {
+                    kotlinx.coroutines.delay(300)
+                    _uiState.update { it.copy(dailyVerseRecitationProgress = step / 20f) }
+                }
+                _uiState.update { it.copy(isDailyVerseReciting = false, dailyVerseRecitationProgress = 1f) }
+            }
+        }
+    }
+
+    // Scripture Reading Goals & Progress
+    fun toggleVerseReadingCompleted(verseReference: String) {
+        val currentSet = _uiState.value.completedVerseKeysToday.toMutableSet()
+        val isNowCompleted = if (currentSet.contains(verseReference)) {
+            currentSet.remove(verseReference)
+            false
+        } else {
+            currentSet.add(verseReference)
+            true
+        }
+
+        prefs.edit().putStringSet("key_completed_verse_keys", currentSet).apply()
+
+        val goalTarget = _uiState.value.dailyReadingGoalTarget
+        val completedCount = currentSet.size
+        val previouslyCelebrated = _uiState.value.celebratedGoalReachedToday
+        val reachedGoal = completedCount >= goalTarget && isNowCompleted
+
+        val newStreak = if (reachedGoal && !previouslyCelebrated) {
+            val updatedStreak = _uiState.value.readingStreakDays + 1
+            prefs.edit().putInt("key_reading_streak_days", updatedStreak).apply()
+            updatedStreak
+        } else {
+            _uiState.value.readingStreakDays
+        }
+
+        _uiState.update {
+            it.copy(
+                completedVerseKeysToday = currentSet,
+                readingStreakDays = newStreak,
+                isCelebrationDialogOpen = reachedGoal && !previouslyCelebrated,
+                celebratedGoalReachedToday = previouslyCelebrated || reachedGoal
+            )
+        }
+
+        if (isNowCompleted) {
+            if (reachedGoal && !previouslyCelebrated) {
+                showToast("🎉 Daily Reading Goal Achieved! ($completedCount/$goalTarget)")
+            } else {
+                showToast("Read & Completed: $verseReference ($completedCount/$goalTarget)")
+            }
+        } else {
+            showToast("Marked unread: $verseReference")
+        }
+    }
+
+    fun toggleChapterReadingCompleted(chapterKey: String) {
+        val currentSet = _uiState.value.completedChapters.toMutableSet()
+        val isNowCompleted = if (currentSet.contains(chapterKey)) {
+            currentSet.remove(chapterKey)
+            false
+        } else {
+            currentSet.add(chapterKey)
+            true
+        }
+        prefs.edit().putStringSet("key_completed_chapters", currentSet).apply()
+        _uiState.update { it.copy(completedChapters = currentSet) }
+        showToast(if (isNowCompleted) "Chapter completed: $chapterKey ✓" else "Chapter uncompleted: $chapterKey")
+    }
+
+    fun setDailyReadingGoalTarget(target: Int) {
+        val safeTarget = target.coerceIn(1, 10)
+        prefs.edit().putInt("key_reading_goal_target", safeTarget).apply()
+        _uiState.update { it.copy(dailyReadingGoalTarget = safeTarget, isGoalPickerOpen = false) }
+        showToast("Daily reading goal set to $safeTarget passages")
+    }
+
+    fun openGoalPicker() {
+        _uiState.update { it.copy(isGoalPickerOpen = true) }
+    }
+
+    fun closeGoalPicker() {
+        _uiState.update { it.copy(isGoalPickerOpen = false) }
+    }
+
+    fun dismissCelebrationDialog() {
+        _uiState.update { it.copy(isCelebrationDialogOpen = false) }
+    }
+
+    fun resetDailyReadingGoals() {
+        val empty = emptySet<String>()
+        prefs.edit().putStringSet("key_completed_verse_keys", empty).apply()
+        _uiState.update {
+            it.copy(
+                completedVerseKeysToday = empty,
+                celebratedGoalReachedToday = false,
+                isCelebrationDialogOpen = false
+            )
+        }
+        showToast("Daily reading goal reset for today")
+    }
+
     // Audio Player Controls
     fun playSermon(sermon: Sermon) {
         _uiState.update {
@@ -497,6 +757,52 @@ class ChurchViewModel(application: Application) : AndroidViewModel(application) 
     // Community & Prayer
     fun setAreaFilter(area: String) {
         _uiState.update { it.copy(selectedAreaFilter = area) }
+    }
+
+    fun setPrayerGroupSearchQuery(query: String) {
+        _uiState.update { it.copy(prayerGroupSearchQuery = query) }
+    }
+
+    fun setGroupCategoryFilter(category: String) {
+        _uiState.update { it.copy(selectedGroupCategoryFilter = category) }
+    }
+
+    fun setGroupFormatFilter(format: String) {
+        _uiState.update { it.copy(selectedGroupFormatFilter = format) }
+    }
+
+    fun setGroupDayFilter(day: String) {
+        _uiState.update { it.copy(selectedGroupDayFilter = day) }
+    }
+
+    fun setGroupSortBy(sortBy: String) {
+        _uiState.update { it.copy(prayerGroupSortBy = sortBy) }
+    }
+
+    fun toggleShowJoinedGroupsOnly() {
+        _uiState.update { it.copy(showJoinedGroupsOnly = !it.showJoinedGroupsOnly) }
+    }
+
+    fun resetPrayerGroupFilters() {
+        _uiState.update {
+            it.copy(
+                prayerGroupSearchQuery = "",
+                selectedAreaFilter = "All Areas",
+                selectedGroupCategoryFilter = "All Categories",
+                selectedGroupFormatFilter = "All Formats",
+                selectedGroupDayFilter = "Any Day",
+                prayerGroupSortBy = "Recommended",
+                showJoinedGroupsOnly = false
+            )
+        }
+    }
+
+    fun openPrayerGroupDetail(group: PrayerGroup) {
+        _uiState.update { it.copy(selectedPrayerGroupForDetail = group, isShowingGroupDetailModal = true) }
+    }
+
+    fun closePrayerGroupDetail() {
+        _uiState.update { it.copy(isShowingGroupDetailModal = false, selectedPrayerGroupForDetail = null) }
     }
 
     fun toggleJoinGroup(groupId: String) {

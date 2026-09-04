@@ -53,8 +53,24 @@ class ChurchRepository(
         }
     }
 
-    // Static / Catalog Data
+    // Static / Catalog Data & Daily Verses Fetching
     fun getDailyVerse(): DailyVerse = ChurchDataSeed.dailyVerse
+    fun getDailyVerses(): List<DailyVerse> = ChurchDataSeed.dailyVersesList
+    fun getDailyVerseByIndex(index: Int): DailyVerse {
+        val list = ChurchDataSeed.dailyVersesList
+        val safeIndex = ((index % list.size) + list.size) % list.size
+        return list[safeIndex]
+    }
+    fun getDailyVerseByTheme(theme: String): DailyVerse {
+        val matches = ChurchDataSeed.dailyVersesList.filter {
+            it.theme.contains(theme, ignoreCase = true)
+        }
+        return matches.firstOrNull() ?: ChurchDataSeed.dailyVersesList.first()
+    }
+    fun getRandomDailyVerse(): DailyVerse {
+        return ChurchDataSeed.dailyVersesList.random()
+    }
+
     fun getPastors(): List<Pastor> = ChurchDataSeed.pastors
     fun getSermons(): List<Sermon> = ChurchDataSeed.sermons
     fun getDevotionals(): List<Devotional> = ChurchDataSeed.devotionals
@@ -91,6 +107,27 @@ class ChurchRepository(
                 )
             )
         }
+    }
+
+    suspend fun saveBookmark(book: String, chapter: Int, verse: Int, text: String, translation: String, note: String = "") {
+        bookmarkDao.insertBookmark(
+            BookmarkEntity(
+                book = book,
+                chapter = chapter,
+                verse = verse,
+                text = text,
+                translation = translation,
+                note = note
+            )
+        )
+    }
+
+    suspend fun deleteBookmark(book: String, chapter: Int, verse: Int) {
+        bookmarkDao.deleteBookmark(book, chapter, verse)
+    }
+
+    suspend fun getBookmark(book: String, chapter: Int, verse: Int): BookmarkEntity? {
+        return bookmarkDao.getBookmark(book, chapter, verse)
     }
 
     // Journal

@@ -58,6 +58,7 @@ import com.example.data.repository.ChurchDataSeed
 import com.example.ui.ChurchTab
 import com.example.ui.ChurchViewModel
 import com.example.ui.components.CupertinoIcons
+import com.example.ui.components.DailyScriptureReaderComponent
 import com.example.ui.components.IosGroupedCard
 import com.example.ui.theme.*
 import kotlinx.coroutines.launch
@@ -85,6 +86,7 @@ fun ScriptureScreen(
 
     var showPassagePickerSheet by remember { mutableStateOf(false) }
     var showBookmarksSheet by remember { mutableStateOf(false) }
+    var showDailyVerseSheet by remember { mutableStateOf(false) }
     var showTextSizeSettings by remember { mutableStateOf(false) }
     var showTranslationMenu by remember { mutableStateOf(false) }
     var isSearchActive by remember { mutableStateOf(false) }
@@ -326,6 +328,21 @@ fun ScriptureScreen(
                                 contentDescription = "Adjust Font Size",
                                 tint = if (showTextSizeSettings) RoyalNavy else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        // Daily Verse Reader Shortcut
+                        IconButton(
+                            onClick = { showDailyVerseSheet = true },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("scripture_daily_verse_button")
+                        ) {
+                            Icon(
+                                imageVector = CupertinoIcons.Sparkles,
+                                contentDescription = "Daily Scripture Reader",
+                                tint = ChurchGold,
+                                modifier = Modifier.size(19.dp)
                             )
                         }
 
@@ -868,6 +885,107 @@ fun ScriptureScreen(
                     }
                 }
             }
+
+            // Chapter Completion & Reading Goal Card
+            if (searchKeyword.isBlank()) {
+                item {
+                    val chapterKey = "${currentBook.name} ${currentChapter.chapterNumber}"
+                    val isChapterCompleted = uiState.completedChapters.contains(chapterKey)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Surface(
+                        shape = RoundedCornerShape(18.dp),
+                        color = if (isChapterCompleted) Color(0xFF2E7D32).copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isChapterCompleted) Color(0xFF2E7D32).copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp)
+                            .testTag("scripture_chapter_completion_card")
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(18.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = if (isChapterCompleted) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                                contentDescription = null,
+                                tint = if (isChapterCompleted) Color(0xFF2E7D32) else ChurchGold,
+                                modifier = Modifier.size(32.dp)
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = if (isChapterCompleted) "Chapter Completed! ✓" else "Finished reading this chapter?",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isChapterCompleted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = if (isChapterCompleted)
+                                    "Praise God! You completed ${currentBook.name} ${currentChapter.chapterNumber}."
+                                else
+                                    "Mark ${currentBook.name} ${currentChapter.chapterNumber} as completed to track your Bible reading journey.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Button(
+                                    onClick = {
+                                        viewModel.toggleChapterReadingCompleted(chapterKey)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (isChapterCompleted) Color(0xFF2E7D32) else RoyalNavy
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.testTag("scripture_mark_chapter_completed_btn")
+                                ) {
+                                    Icon(
+                                        imageVector = if (isChapterCompleted) Icons.Default.Check else Icons.Default.DoneAll,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(if (isChapterCompleted) "Completed ✓" else "Mark as Read")
+                                }
+
+                                if (uiState.selectedChapterNumber < currentBook.chapterCount) {
+                                    OutlinedButton(
+                                        onClick = {
+                                            viewModel.setScriptureChapter(uiState.selectedChapterNumber + 1)
+                                        },
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Text("Next Chapter")
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1283,6 +1401,33 @@ fun ScriptureScreen(
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // Daily Verse Reader Modal Sheet
+        if (showDailyVerseSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showDailyVerseSheet = false },
+                containerColor = MaterialTheme.colorScheme.surface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 32.dp)
+                ) {
+                    DailyScriptureReaderComponent(
+                        viewModel = viewModel,
+                        onNavigateToChapter = { bookName, chapter, verse ->
+                            showDailyVerseSheet = false
+                            val foundBook = ChurchDataSeed.findBookByName(bookName) ?: currentBook
+                            viewModel.setScriptureBook(foundBook, chapter, verse)
+                            coroutineScope.launch {
+                                listState.animateScrollToItem((verse - 1).coerceAtLeast(0))
+                            }
+                        }
+                    )
                 }
             }
         }

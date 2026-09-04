@@ -27,7 +27,14 @@ data class DailyVerse(
     val reference: String,
     val text: String,
     val theme: String,
-    val date: String
+    val date: String,
+    val book: String = "Romans",
+    val chapter: Int = 8,
+    val verse: Int = 38,
+    val endVerse: Int = 39,
+    val reflection: String = "Take a quiet moment to reflect on God's unwavering promises today. Meditate on how His grace sustains your path through every season.",
+    val prayer: String = "Lord, anchor my heart in Your unfailing love. Guide my thoughts, words, and actions today. Amen.",
+    val translationTexts: Map<String, String> = emptyMap()
 )
 
 data class Sermon(
@@ -80,15 +87,22 @@ data class Devotional(
 data class PrayerGroup(
     val id: String,
     val name: String,
-    val area: String, // "Northside", "Downtown / Central", "Westside", "East Valley", "South Suburbs"
+    val area: String, // "North District", "Downtown / Central", "Westside", "East Valley", "South Hills", "All Areas"
     val meetingDayTime: String,
     val locationName: String,
     val address: String,
     val leaderName: String,
     val leaderContact: String,
-    val groupType: String, // "Young Adults", "Families", "Men's Fellowship", "Women's Grace", "All Welcome"
+    val groupType: String, // "Young Adults", "Families & Couples", "Men's Fellowship", "Women's Grace", "Intercessory Prayer", "Bible Study", "All Welcome"
     val description: String,
-    val memberCount: Int = 12
+    val memberCount: Int = 12,
+    val category: String = groupType,
+    val meetingFormat: String = "In-Person", // "In-Person", "Home Gathering", "Hybrid / Virtual"
+    val dayOfWeek: String = "Wednesday", // "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+    val distanceMiles: Double = 2.4,
+    val tags: List<String> = listOf("Fellowship", "Prayer", "Scripture Study"),
+    val latitude: Double = 34.0522,
+    val longitude: Double = -118.2437
 )
 
 data class CompanionStaffUser(

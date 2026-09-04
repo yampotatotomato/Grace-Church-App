@@ -30,6 +30,7 @@ import com.example.ui.ChurchTab
 import com.example.ui.ChurchViewModel
 import com.example.ui.components.CupertinoIcons
 import com.example.ui.components.DailyScriptureCard
+import com.example.ui.components.DailyScriptureReaderComponent
 import com.example.ui.components.IosGroupedCard
 import com.example.ui.components.IosTopBar
 import com.example.ui.theme.*
@@ -105,24 +106,14 @@ fun HomeScreen(
             contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            // 1. Clean & Minimal Scripture Reading Component (Daily Verse)
+            // 1. Scripture Reader Component (Fetches Daily Verses & Bookmarking)
             item {
-                DailyScriptureCard(
-                    dailyVerse = dailyVerse,
-                    translation = uiState.selectedTranslation,
-                    isBookmarked = isDailyVerseBookmarked,
-                    onReadChapter = {
-                        viewModel.selectTab(ChurchTab.SCRIPTURE)
-                        val romans = ChurchDataSeed.bibleBooks.find { it.name == "Romans" }
-                        if (romans != null) {
-                            viewModel.setScriptureBook(romans, 8)
-                        }
-                    },
-                    onToggleBookmark = {
-                        viewModel.toggleBookmark("Romans", 8, 38, dailyVerse.text)
-                    },
-                    onListen = {
-                        viewModel.showToast("Reciting ${dailyVerse.reference}...")
+                DailyScriptureReaderComponent(
+                    viewModel = viewModel,
+                    onNavigateToChapter = { bookName, chapter, verse ->
+                        val foundBook = ChurchDataSeed.findBookByName(bookName) ?: ChurchDataSeed.bibleBooks.first()
+                        viewModel.setScriptureBook(foundBook, chapter, verse)
+                        onNavigateTab(ChurchTab.SCRIPTURE)
                     },
                     modifier = Modifier.testTag("home_daily_scripture_component")
                 )

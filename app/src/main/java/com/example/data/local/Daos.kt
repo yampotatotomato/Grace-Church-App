@@ -21,6 +21,9 @@ interface BookmarkDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM bookmarks WHERE book = :book AND chapter = :chapter AND verse = :verse)")
     fun isBookmarked(book: String, chapter: Int, verse: Int): Flow<Boolean>
+
+    @Query("SELECT * FROM bookmarks WHERE book = :book AND chapter = :chapter AND verse = :verse LIMIT 1")
+    suspend fun getBookmark(book: String, chapter: Int, verse: Int): BookmarkEntity?
 }
 
 @Dao
